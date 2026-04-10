@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+<<<<<<< HEAD
 import axios from "axios";
+=======
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
 
 const ArrowLeftIcon = () => (
   <svg
@@ -53,6 +56,7 @@ const Skills = () => {
     );
   };
 
+<<<<<<< HEAD
   const handleContinue = async () => {
     try {
       const getSkillsByCategory = (category: Category) =>
@@ -90,6 +94,15 @@ const Skills = () => {
 
   const handleSkip = () => {
     navigate("/dashboard/home");
+=======
+  const handleContinue = () => {
+    console.log("Selected Skills:", selectedSkills);
+    navigate("/step");
+  };
+
+  const handleSkip = () => {
+    navigate("/step");
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
   };
 
   // Group skills by category

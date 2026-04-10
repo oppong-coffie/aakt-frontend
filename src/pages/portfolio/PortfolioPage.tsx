@@ -8,7 +8,10 @@ import {
   Draggable,
   type DropResult,
 } from "@hello-pangea/dnd";
+<<<<<<< HEAD
 import { portfolioService } from "../../api/portfolio.service";
+=======
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
 
 /**
  * Portfolio Page - Displays a category-specific view (e.g., SaaS, Ecommerce)
@@ -90,6 +93,7 @@ const PortfolioPage = () => {
     { label: "Block" },
   ];
 
+<<<<<<< HEAD
   const [cards, setCards] = useState<{ id: string; title: string; order: number }[]>([]);
 
   // Fetch data on mount
@@ -108,6 +112,15 @@ const PortfolioPage = () => {
   }, [category]);
 
   const onDragEnd = async (result: DropResult) => {
+=======
+  const [cards, setCards] = useState([
+    { id: "dept-1", title: "Department 1" },
+    { id: "dept-2", title: "Department 2" },
+    { id: "process", title: "Process" },
+  ]);
+
+  const onDragEnd = (result: DropResult) => {
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
     if (!result.destination) {
       return;
     }
@@ -116,6 +129,7 @@ const PortfolioPage = () => {
     const [removed] = reorderedCards.splice(result.source.index, 1);
     reorderedCards.splice(result.destination.index, 0, removed);
 
+<<<<<<< HEAD
     // Update state optimistically
     const updatedCards = reorderedCards.map((card, idx) => ({ ...card, order: idx }));
     setCards(updatedCards);
@@ -146,6 +160,9 @@ const PortfolioPage = () => {
     } catch (err) {
       console.error("Failed to create item", err);
     }
+=======
+    setCards(reorderedCards);
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
   };
 
   return (
@@ -202,7 +219,10 @@ const PortfolioPage = () => {
                   {dropdownItems.map((item, i) => (
                     <button
                       key={i}
+<<<<<<< HEAD
                       onClick={() => handleCreateNew(item.label)}
+=======
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
                       className="w-full flex items-center gap-3 px-6 py-3 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors text-left group"
                     >
                       <span className="text-gray-400 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400">
@@ -228,10 +248,18 @@ const PortfolioPage = () => {
             onClick={() => setActiveTab(tab)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+<<<<<<< HEAD
             className={`relative px-2 py-1 text-sm font-medium transition-colors ${activeTab === tab
               ? "text-gray-900 dark:text-gray-100"
               : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
               }`}
+=======
+            className={`relative px-2 py-1 text-sm font-medium transition-colors ${
+              activeTab === tab
+                ? "text-gray-900 dark:text-gray-100"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            }`}
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
           >
             {tab}
             {activeTab === tab && (
@@ -266,6 +294,7 @@ const PortfolioPage = () => {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
+<<<<<<< HEAD
                           className={`transition-all ${snapshot.isDragging ? "z-50" : ""
                             }`}
                         >
@@ -274,6 +303,18 @@ const PortfolioPage = () => {
                               ? "bg-white dark:bg-slate-900 shadow-lg"
                               : ""
                               }`}
+=======
+                          className={`transition-all ${
+                            snapshot.isDragging ? "z-50" : ""
+                          }`}
+                        >
+                          <motion.div
+                            className={`flex flex-col items-center gap-3 w-64 group cursor-pointer p-6 rounded-[2.5rem] hover:bg-gray-100 dark:hover:bg-slate-800 transition-all font-bold ${
+                              snapshot.isDragging
+                                ? "bg-white dark:bg-slate-900 shadow-lg"
+                                : ""
+                            }`}
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                           >

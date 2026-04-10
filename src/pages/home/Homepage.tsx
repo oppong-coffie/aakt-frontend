@@ -1,7 +1,12 @@
 import { motion, AnimatePresence } from "framer-motion";
+<<<<<<< HEAD
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
+=======
+import { Link } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
 import {
   DragDropContext,
   Droppable,
@@ -310,7 +315,11 @@ const TaskItem = ({
                   >
                     {task.completed ? "Undo Task" : "Complete"}
                   </button>
+<<<<<<< HEAD
                   {/* <button
+=======
+                  <button
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
                     onClick={() => {
                       onArchive?.();
                       setIsMenuOpen(false);
@@ -318,7 +327,11 @@ const TaskItem = ({
                     className="w-full text-left px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                   >
                     Archive
+<<<<<<< HEAD
                   </button> */}
+=======
+                  </button>
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
                   <button
                     onClick={() => {
                       onDelete();
@@ -344,12 +357,28 @@ const TaskItem = ({
  */
 const Homepage = () => {
   // --- STATE ---
+<<<<<<< HEAD
   const navigate = useNavigate();
   const [completionData, setCompletionData] = useState<any>(null);
   const [completionPercentage, setCompletionPercentage] = useState(0);
 
   /** Active workloads split into columns */
   const [workloads, setWorkloads] = useState<any[]>([]);
+=======
+
+  /** Active workloads split into columns */
+  const [workloads, setWorkloads] = useState([
+    {
+      id: "today",
+      title: "Today",
+      tasks: [
+        { id: "1", text: "Review business infrastructure", completed: false },
+        { id: "2", text: "Update portfolio metrics", completed: false },
+      ],
+    },
+    { id: "later", title: "Later", tasks: [] },
+  ]);
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
 
   /** Tasks moved out of active workloads */
   const [archivedTasks, setArchivedTasks] = useState<any[]>([]);
@@ -357,15 +386,19 @@ const Homepage = () => {
   /** Workloads moved out of active view */
   const [archivedWorkloads, setArchivedWorkloads] = useState<any[]>([]);
 
+<<<<<<< HEAD
   /** Loading state */
   const [isLoading, setIsLoading] = useState(true);
 
+=======
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
   /** State for inline task addition */
   const [addingToWorkloadId, setAddingToWorkloadId] = useState<string | null>(
     null,
   );
   const [newTaskText, setNewTaskText] = useState("");
 
+<<<<<<< HEAD
   // Helper to get auth token from localStorage
   const getToken = () => localStorage.getItem("token");
 
@@ -424,6 +457,8 @@ const Homepage = () => {
     fetchWorkloads();
   }, []);
 
+=======
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
   // --- DRAG AND DROP HANDLER ---
 
   /**
@@ -448,6 +483,7 @@ const Homepage = () => {
         const [archived] = newWorkloads.splice(source.index, 1);
         setWorkloads(newWorkloads);
         setArchivedWorkloads([...archivedWorkloads, archived]);
+<<<<<<< HEAD
         // Call archive API
         axios
           .patch(
@@ -456,6 +492,8 @@ const Homepage = () => {
             { headers: { Authorization: `Bearer ${getToken()}` } }
           )
           .catch(console.error);
+=======
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
         return;
       }
 
@@ -468,6 +506,7 @@ const Homepage = () => {
         const [restored] = newArchived.splice(source.index, 1);
         const newWorkloads = Array.from(workloads);
         newWorkloads.splice(destination.index, 0, restored);
+<<<<<<< HEAD
         setArchivedWorkloads(newArchived);
         setWorkloads(newWorkloads);
         // Call unarchive API
@@ -478,6 +517,11 @@ const Homepage = () => {
             { headers: { Authorization: `Bearer ${getToken()}` } }
           )
           .catch(console.error);
+=======
+
+        setArchivedWorkloads(newArchived);
+        setWorkloads(newWorkloads);
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
         return;
       }
 
@@ -547,7 +591,11 @@ const Homepage = () => {
 
         const newArchived = Array.from(archivedTasks);
         newArchived.splice(destination.index, 0, {
+<<<<<<< HEAD
           ...(task as any),
+=======
+          ...task,
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
           originalWorkloadId: sourceCol.id,
         });
 
@@ -598,6 +646,7 @@ const Homepage = () => {
   // --- ACTIONS: WORKLOADS ---
 
   /** Create a new empty workload column */
+<<<<<<< HEAD
   const addWorkload = async () => {
     try {
       const token = getToken();
@@ -626,12 +675,27 @@ const Homepage = () => {
       } catch (err) {
         console.error("Failed to delete workload:", err);
       }
+=======
+  const addWorkload = () => {
+    const newId = Date.now().toString();
+    setWorkloads([
+      ...workloads,
+      { id: newId, title: "New Workload", tasks: [] },
+    ]);
+  };
+
+  /** Remove an entire workload column */
+  const deleteWorkload = (workloadId: string) => {
+    if (confirm("Are you sure you want to delete this workload?")) {
+      setWorkloads(workloads.filter((w) => w.id !== workloadId));
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
     }
   };
 
   // --- ACTIONS: TASKS ---
 
   /** Add a new task to a specific workload column */
+<<<<<<< HEAD
   const addTask = async (workloadId: string, taskText: string) => {
     if (!taskText.trim()) return;
     try {
@@ -677,14 +741,45 @@ const Homepage = () => {
     } catch (err) {
       console.error(`Failed to update task status to ${newCompleted ? "complete" : "todo"}:`, err);
     }
+=======
+  const addTask = (workloadId: string, taskText: string) => {
+    if (!taskText.trim()) return;
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
 
     setWorkloads(
       workloads.map((w) => {
         if (w.id === workloadId) {
           return {
             ...w,
+<<<<<<< HEAD
             tasks: w.tasks.map((t: any) =>
               t.id === taskId ? { ...t, completed: newCompleted } : t,
+=======
+            tasks: [
+              ...w.tasks,
+              {
+                id: Date.now().toString(),
+                text: taskText.trim(),
+                completed: false,
+              },
+            ],
+          };
+        }
+        return w;
+      }),
+    );
+  };
+
+  /** Toggle the completion status (checked/unchecked) */
+  const toggleTask = (workloadId: string, taskId: string) => {
+    setWorkloads(
+      workloads.map((w) => {
+        if (w.id === workloadId) {
+          return {
+            ...w,
+            tasks: w.tasks.map((t: any) =>
+              t.id === taskId ? { ...t, completed: !t.completed } : t,
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
             ),
           };
         }
@@ -694,6 +789,7 @@ const Homepage = () => {
   };
 
   /** Remove a task from its workload column */
+<<<<<<< HEAD
   const deleteTask = async (workloadId: string, taskId: string) => {
     try {
       const token = getToken();
@@ -710,10 +806,24 @@ const Homepage = () => {
           ? { ...w, tasks: w.tasks.filter((t: any) => t.id !== taskId) }
           : w
       )
+=======
+  const deleteTask = (workloadId: string, taskId: string) => {
+    setWorkloads(
+      workloads.map((w) => {
+        if (w.id === workloadId) {
+          return {
+            ...w,
+            tasks: w.tasks.filter((t: any) => t.id !== taskId),
+          };
+        }
+        return w;
+      }),
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
     );
   };
 
   /** Rename an existing task */
+<<<<<<< HEAD
   const editTask = async (workloadId: string, taskId: string, newText: string) => {
     try {
       const token = getToken();
@@ -725,6 +835,9 @@ const Homepage = () => {
     } catch (err) {
       console.error("Failed to rename task:", err);
     }
+=======
+  const editTask = (workloadId: string, taskId: string, newText: string) => {
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
     setWorkloads(
       workloads.map((w) => {
         if (w.id === workloadId) {
@@ -790,6 +903,7 @@ const Homepage = () => {
 
   // --- RENDER ---
 
+<<<<<<< HEAD
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh] text-gray-400 text-sm font-medium">
@@ -798,6 +912,8 @@ const Homepage = () => {
     );
   }
 
+=======
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="relative min-h-[85vh] mt-9 flex flex-col gap-12 pb-2 font-inter-local">
@@ -845,6 +961,7 @@ const Homepage = () => {
                               ),
                             );
                           }}
+<<<<<<< HEAD
                           onBlur={(e) => {
                             const newName = e.target.value.trim();
                             if (!newName) return;
@@ -856,6 +973,8 @@ const Homepage = () => {
                               )
                               .catch(console.error);
                           }}
+=======
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
                         />
                         <button
                           onClick={() => deleteWorkload(workload.id)}
@@ -1028,6 +1147,7 @@ const Homepage = () => {
                               <div className="flex gap-1">
                                 <button
                                   onClick={() => {
+<<<<<<< HEAD
                                     const newArchived = archivedWorkloads.filter(
                                       (w) => w.id !== workload.id,
                                     );
@@ -1040,6 +1160,14 @@ const Homepage = () => {
                                         { headers: { Authorization: `Bearer ${getToken()}` } }
                                       )
                                       .catch(console.error);
+=======
+                                    const newArchived =
+                                      archivedWorkloads.filter(
+                                        (w) => w.id !== workload.id,
+                                      );
+                                    setArchivedWorkloads(newArchived);
+                                    setWorkloads([...workloads, workload]);
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
                                   }}
                                   className="p-1 hover:bg-blue-50 text-blue-500 rounded-lg transition-colors"
                                   title="Restore"
@@ -1047,6 +1175,7 @@ const Homepage = () => {
                                   <PlusIcon size={12} />
                                 </button>
                                 <button
+<<<<<<< HEAD
                                   onClick={async () => {
                                     if (confirm("Delete this workload permanently?")) {
                                       try {
@@ -1059,6 +1188,18 @@ const Homepage = () => {
                                       }
                                       setArchivedWorkloads(
                                         archivedWorkloads.filter((w) => w.id !== workload.id)
+=======
+                                  onClick={() => {
+                                    if (
+                                      confirm(
+                                        "Delete this workload permanently?",
+                                      )
+                                    ) {
+                                      setArchivedWorkloads(
+                                        archivedWorkloads.filter(
+                                          (w) => w.id !== workload.id,
+                                        ),
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
                                       );
                                     }
                                   }}
@@ -1149,6 +1290,7 @@ const Homepage = () => {
         </div>
 
         {/* Footer Banner: Finish Account Setup */}
+<<<<<<< HEAD
         {completionPercentage < 100 && (
           <div className="mt-12 w-full">
             <motion.div className="bg-white rounded-[2.5rem] p-8 sm:p-10 shadow-sm border border-gray-100 flex flex-col justify-between items-center gap-6">
@@ -1193,6 +1335,27 @@ const Homepage = () => {
             </motion.div>
           </div>
         )}
+=======
+        <div className="mt-12 w-full">
+          <motion.div className="bg-white rounded-[2.5rem] p-8 sm:p-10 shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-6">
+            <div className="text-center sm:text-left">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                Finish setting up your account
+              </h3>
+              <p className="text-gray-400 text-sm">
+                Things that you have missed should be filled.
+              </p>
+            </div>
+
+            <Link
+              to="finish"
+              className="px-10 py-3 border border-blue-600 text-blue-600 rounded-full font-bold text-sm hover:bg-blue-50 transition-colors whitespace-nowrap"
+            >
+              Finish It
+            </Link>
+          </motion.div>
+        </div>
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
       </div>
     </DragDropContext>
   );

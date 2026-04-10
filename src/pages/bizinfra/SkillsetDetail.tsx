@@ -3,7 +3,10 @@ import Breadcrumbs from "../../components/Breadcrumbs";
 import EditItemModal from "../../components/EditItemModal";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+<<<<<<< HEAD
 import { bizInfraService } from "../../api/bizInfra.service";
+=======
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
 import {
   DragDropContext,
   Droppable,
@@ -154,10 +157,18 @@ const SearchModal = ({
                     <button
                       key={category}
                       onClick={() => setActiveCategory(category)}
+<<<<<<< HEAD
                       className={`text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all font-['Inter'] ${activeCategory === category
                         ? "bg-blue-600/10 dark:bg-blue-600/20 text-blue-600 dark:text-blue-400"
                         : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-gray-200"
                         }`}
+=======
+                      className={`text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all font-['Inter'] ${
+                        activeCategory === category
+                          ? "bg-blue-600/10 dark:bg-blue-600/20 text-blue-600 dark:text-blue-400"
+                          : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-gray-200"
+                      }`}
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
                     >
                       {category}
                     </button>
@@ -285,7 +296,15 @@ const SkillsetDetail = () => {
   const plusButtonRef = useRef<HTMLDivElement | null>(null);
   const plusMenuRef = useRef<HTMLDivElement | null>(null);
 
+<<<<<<< HEAD
   const [categories, setCategories] = useState<{ id: string; label: string; image: string | null }[]>([]);
+=======
+  const [categories, setCategories] = useState([
+    { id: "project", label: "Project", image: null as string | null },
+    { id: "process", label: "Process", image: null as string | null },
+    { id: "block", label: "Block", image: null as string | null },
+  ]);
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<{
     id: string;
@@ -293,6 +312,7 @@ const SkillsetDetail = () => {
     image?: string | null;
   } | null>(null);
 
+<<<<<<< HEAD
   // Fetch bizinfra items on mount
   useEffect(() => {
     const loadItems = async () => {
@@ -306,6 +326,8 @@ const SkillsetDetail = () => {
     loadItems();
   }, []);
 
+=======
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
     const items = Array.from(categories);
@@ -338,11 +360,16 @@ const SkillsetDetail = () => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [isPlusOpen]);
 
+<<<<<<< HEAD
   const handleSaveEdit = async (
+=======
+  const handleSaveEdit = (
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
     id: string,
     newName: string,
     newImage: string | null,
   ) => {
+<<<<<<< HEAD
     try {
       const updated = await bizInfraService.updateItem(id, { name: newName, imageUrl: newImage || undefined });
       setCategories((prev) =>
@@ -375,6 +402,23 @@ const SkillsetDetail = () => {
       setCategories(prev => [...prev, { id: newItem._id, label: newItem.name, image: newItem.imageUrl || null }]);
     } catch (err) {
       console.error("Failed to create item", err);
+=======
+    setCategories((prev) =>
+      prev.map((cat) =>
+        cat.id === id ? { ...cat, label: newName, image: newImage } : cat,
+      ),
+    );
+  };
+
+  const handleModeSelect = (mode: "blank" | "template") => {
+    if (selectedCategory) {
+      // Example: Navigate to a creation page with mode and category info
+      console.log(
+        `Creating new ${selectedCategory.label} in ${mode} mode for skill ${id}`,
+      );
+      // You would typically use a navigation hook here, e.g., navigate(...)
+      // For now, just close the modal
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
     }
     setIsCreationModalOpen(false);
     setSelectedCategory(null);
@@ -461,8 +505,14 @@ const SkillsetDetail = () => {
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
+<<<<<<< HEAD
                         className={`transition-all ${snapshot.isDragging ? "z-50" : ""
                           }`}
+=======
+                        className={`transition-all ${
+                          snapshot.isDragging ? "z-50" : ""
+                        }`}
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
                       >
                         <Link
                           to={`/dashboard/bizinfra/skillset/${id}/${cat.id}`}
@@ -485,7 +535,11 @@ const SkillsetDetail = () => {
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
+<<<<<<< HEAD
                                 handleDelete(cat.id);
+=======
+                                console.log("Delete", cat.id);
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
                               }}
                               className="p-2 rounded-xl hover:bg-white dark:hover:bg-slate-800 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-all scale-90 hover:scale-100"
                             >
@@ -493,10 +547,18 @@ const SkillsetDetail = () => {
                             </button>
                           </div>
                           <motion.div
+<<<<<<< HEAD
                             className={`flex flex-col items-center gap-3 w-full cursor-pointer p-6 rounded-[2.5rem] hover:bg-gray-100 dark:hover:bg-slate-900/50 transition-all ${snapshot.isDragging
                               ? "bg-white dark:bg-slate-800 shadow-lg"
                               : ""
                               }`}
+=======
+                            className={`flex flex-col items-center gap-3 w-full cursor-pointer p-6 rounded-[2.5rem] hover:bg-gray-100 dark:hover:bg-slate-900/50 transition-all ${
+                              snapshot.isDragging
+                                ? "bg-white dark:bg-slate-800 shadow-lg"
+                                : ""
+                            }`}
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                           >

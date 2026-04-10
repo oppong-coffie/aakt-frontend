@@ -1,6 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { taskService, type TaskItem } from "../api/task.service";
+=======
+import { useEffect } from "react";
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -31,8 +35,11 @@ const CloseIcon = () => (
 );
 
 const TaskModal = ({ isOpen, onClose, task }: TaskModalProps) => {
+<<<<<<< HEAD
   const [subtasks, setSubtasks] = useState<TaskItem[]>([]);
 
+=======
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -41,6 +48,7 @@ const TaskModal = ({ isOpen, onClose, task }: TaskModalProps) => {
     return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
+<<<<<<< HEAD
   useEffect(() => {
     if (isOpen && task?.id) {
       taskService.getTasks({ parentId: task.id })
@@ -49,6 +57,8 @@ const TaskModal = ({ isOpen, onClose, task }: TaskModalProps) => {
     }
   }, [isOpen, task?.id]);
 
+=======
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
   if (!isOpen) return null;
 
   return (
@@ -105,6 +115,7 @@ const TaskModal = ({ isOpen, onClose, task }: TaskModalProps) => {
                 Subtasks
               </h3>
               <div className="space-y-3">
+<<<<<<< HEAD
                 {subtasks.length > 0 ? subtasks.map((st) => (
                   <div key={st._id} className="flex items-center gap-3">
                     <div className="w-5 h-5 rounded border border-gray-300 dark:border-slate-700 flex items-center justify-center cursor-pointer hover:border-blue-500 transition-colors"></div>
@@ -115,6 +126,16 @@ const TaskModal = ({ isOpen, onClose, task }: TaskModalProps) => {
                 )) : (
                   <span className="text-gray-500 text-sm">No subtasks yet</span>
                 )}
+=======
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded border border-gray-300 dark:border-slate-700 flex items-center justify-center cursor-pointer hover:border-blue-500 transition-colors"></div>
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">
+                      Subtask item {i}
+                    </span>
+                  </div>
+                ))}
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
               </div>
             </div>
           </div>

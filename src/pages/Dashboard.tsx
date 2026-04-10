@@ -109,9 +109,16 @@ const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [bizInfraOpen, setBizInfraOpen] = useState(false);
   const [portfolioOpen, setPortfolioOpen] = useState(false);
+<<<<<<< HEAD
   const [businesses, setBusinesses] = useState<Array<{ _id: string; name: string }>>([]);
   const [businessLoading, setBusinessLoading] = useState(true);
   const [businessError, setBusinessError] = useState<string | null>(null);
+=======
+  const [saasOpen, setSaasOpen] = useState(false);
+  const [saasDepartmentOpen, setSaasDepartmentOpen] = useState(false);
+  const [saasOperationOpen, setSaasOperationOpen] = useState(false);
+  const [saasProjectOpen, setSaasProjectOpen] = useState(false);
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
   const [navCollapsed, setNavCollapsed] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem("theme") === "dark";
@@ -128,6 +135,7 @@ const Dashboard = () => {
     }
   }, [isDarkMode]);
 
+<<<<<<< HEAD
   useEffect(() => {
     const fetchBusinesses = async () => {
       try {
@@ -160,6 +168,8 @@ const Dashboard = () => {
     fetchBusinesses();
   }, []);
 
+=======
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
   const toggleDarkMode = () => setIsDarkMode((prev) => !prev);
 
   // Auto-expansion logic removed as per user request
@@ -405,13 +415,21 @@ const Dashboard = () => {
                 className={`flex items-center ${
                   navCollapsed ? "justify-center" : "gap-3"
                 } text-black font-bold text-xs uppercase tracking-wider transition-colors duration-200`}
+<<<<<<< HEAD
                 title={navCollapsed ? "Business" : undefined}
+=======
+                title={navCollapsed ? "Portfolio" : undefined}
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
               >
                 <PortfolioIcon />
                 <span
                   className={navCollapsed ? "hidden" : "dark:text-gray-300"}
                 >
+<<<<<<< HEAD
                   Business
+=======
+                  Portfolio
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
                 </span>
               </Link>
               {!navCollapsed && (
@@ -442,6 +460,7 @@ const Dashboard = () => {
               }`}
             >
               <div className="pl-4 space-y-1 border-l-2 border-gray-100 ml-5">
+<<<<<<< HEAD
                 {businessLoading && (
                   <div className="pl-2 py-1 text-xs text-gray-500 dark:text-gray-400">
                     Loading businesses...
@@ -472,12 +491,319 @@ const Dashboard = () => {
                     ))}
                   </div>
                 )}
+=======
+                {/* SaaS with nested submenu */}
+                <div className="space-y-1">
+                  <div className="group flex items-center justify-between gap-1 py-1">
+                    <Link
+                      to="/dashboard/portfolio/saas"
+                      onClick={() => setIsSidebarOpen(false)}
+                      className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        location.pathname === "/dashboard/portfolio/saas"
+                          ? "bg-blue-50 dark:bg-blue-900/20 text-black dark:text-blue-400"
+                          : " text-black dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-gray-200"
+                      }`}
+                    >
+                      <span className="text-black dark:text-inherit">SaaS</span>
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setSaasOpen((o) => !o);
+                      }}
+                      className="p-1 rounded hover:bg-gray-200/80 transition-colors shrink-0"
+                      aria-label={
+                        saasOpen ? "Collapse SaaS menu" : "Expand SaaS menu"
+                      }
+                    >
+                      <ChevronIcon open={saasOpen} />
+                    </button>
+                  </div>
+                  <div
+                    className={`overflow-hidden transition-all duration-200 ease-out ${
+                      saasOpen
+                        ? "max-h-[540px] opacity-100"
+                        : "max-h-0 opacity-70"
+                    }`}
+                  >
+                    <div className="pl-3 space-y-0 border-l-2 border-gray-100 dark:border-slate-800 ml-2">
+                      {/* Business: Department (expandable → Department, Operation, Project, Process, Block) */}
+                      <div className="space-y-0">
+                        <div className="group flex items-center justify-between gap-1 py-0.5">
+                          <Link
+                            to="/dashboard/portfolio/saas/department"
+                            onClick={() => setIsSidebarOpen(false)}
+                            className={`flex-1 py-1.5 pl-2 text-sm font-medium rounded-lg transition-colors ${
+                              location.pathname ===
+                              "/dashboard/portfolio/saas/department"
+                                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                                : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-gray-200"
+                            }`}
+                          >
+                            <span className="dark:text-inherit">
+                              Department
+                            </span>
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setSaasDepartmentOpen((o) => !o);
+                            }}
+                            className="p-0.5 rounded hover:bg-gray-200/80 transition-colors shrink-0"
+                            aria-label={
+                              saasDepartmentOpen
+                                ? "Collapse Department"
+                                : "Expand Department"
+                            }
+                          >
+                            <ChevronIcon open={saasDepartmentOpen} />
+                          </button>
+                        </div>
+                        <div
+                          className={`overflow-hidden transition-all duration-200 ease-out ${
+                            saasDepartmentOpen
+                              ? "max-h-[220px] opacity-100"
+                              : "max-h-0 opacity-70"
+                          }`}
+                        >
+                          <div className="pl-3 border-l-2 border-gray-100 ml-2 space-y-0">
+                            {[
+                              {
+                                name: "Department",
+                                path: "/dashboard/portfolio/saas/department",
+                              },
+                              {
+                                name: "Operation",
+                                path: "/dashboard/portfolio/saas/operation",
+                              },
+                              {
+                                name: "Project",
+                                path: "/dashboard/portfolio/saas/project",
+                              },
+                              {
+                                name: "Process",
+                                path: "/dashboard/portfolio/saas/process",
+                              },
+                              {
+                                name: "Block",
+                                path: "/dashboard/portfolio/saas/block",
+                              },
+                            ].map((item) => (
+                              <Link
+                                key={item.name}
+                                to={item.path}
+                                onClick={() => setIsSidebarOpen(false)}
+                                className={`block py-1.5 pl-3 text-sm font-medium rounded-lg transition-colors ${
+                                  location.pathname === item.path
+                                    ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                                    : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-gray-200"
+                                }`}
+                              >
+                                <span className="text-black dark:text-inherit">
+                                  {item.name}
+                                </span>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      {/* Operation (expandable → Project, Process, Block) */}
+                      <div className="space-y-0">
+                        <div className="group flex items-center justify-between gap-1 py-0.5">
+                          <Link
+                            to="/dashboard/portfolio/saas/operation"
+                            onClick={() => setIsSidebarOpen(false)}
+                            className={`flex-1 py-1.5 pl-2 text-sm font-medium rounded-lg transition-colors ${
+                              location.pathname ===
+                              "/dashboard/portfolio/saas/operation"
+                                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                                : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-gray-200"
+                            }`}
+                          >
+                            <span className="text-black dark:text-inherit">
+                              Operation
+                            </span>
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setSaasOperationOpen((o) => !o);
+                            }}
+                            className="p-0.5 rounded hover:bg-gray-200/80 transition-colors shrink-0"
+                            aria-label={
+                              saasOperationOpen
+                                ? "Collapse Operation"
+                                : "Expand Operation"
+                            }
+                          >
+                            <ChevronIcon open={saasOperationOpen} />
+                          </button>
+                        </div>
+                        <div
+                          className={`overflow-hidden transition-all duration-200 ease-out ${
+                            saasOperationOpen
+                              ? "max-h-[140px] opacity-100"
+                              : "max-h-0 opacity-70"
+                          }`}
+                        >
+                          <div className="pl-3 border-l-2 border-gray-100 ml-2 space-y-0">
+                            {[
+                              {
+                                name: "Project",
+                                path: "/dashboard/portfolio/saas/project",
+                              },
+                              {
+                                name: "Process",
+                                path: "/dashboard/portfolio/saas/process",
+                              },
+                              {
+                                name: "Block",
+                                path: "/dashboard/portfolio/saas/block",
+                              },
+                            ].map((item) => (
+                              <Link
+                                key={item.name}
+                                to={item.path}
+                                onClick={() => setIsSidebarOpen(false)}
+                                className={`block py-1.5 pl-3 text-sm font-medium rounded-lg transition-colors ${
+                                  location.pathname === item.path
+                                    ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                                    : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-gray-200"
+                                }`}
+                              >
+                                <span className="text-black dark:text-inherit">
+                                  {item.name}
+                                </span>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      {/* Project (expandable → Phase, Process, Block) */}
+                      <div className="space-y-0">
+                        <div className="group flex items-center justify-between gap-1 py-0.5">
+                          <Link
+                            to="/dashboard/portfolio/saas/project"
+                            onClick={() => setIsSidebarOpen(false)}
+                            className={`flex-1 py-1.5 pl-2 text-sm font-medium rounded-lg transition-colors ${
+                              location.pathname ===
+                              "/dashboard/portfolio/saas/project"
+                                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                                : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-gray-200"
+                            }`}
+                          >
+                            <span className="dark:text-inherit">Project</span>
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setSaasProjectOpen((o) => !o);
+                            }}
+                            className="p-0.5 rounded hover:bg-gray-200/80 transition-colors shrink-0"
+                            aria-label={
+                              saasProjectOpen
+                                ? "Collapse Project"
+                                : "Expand Project"
+                            }
+                          >
+                            <ChevronIcon open={saasProjectOpen} />
+                          </button>
+                        </div>
+                        <div
+                          className={`overflow-hidden transition-all duration-200 ease-out ${
+                            saasProjectOpen
+                              ? "max-h-[140px] opacity-100"
+                              : "max-h-0 opacity-70"
+                          }`}
+                        >
+                          <div className="pl-3 border-l-2 border-gray-100 ml-2 space-y-0">
+                            {[
+                              {
+                                name: "Phase 1",
+                                path: "/dashboard/portfolio/saas/project/phase1",
+                              },
+                              {
+                                name: "Phase 2",
+                                path: "/dashboard/portfolio/saas/project/phase2",
+                              },
+                              {
+                                name: "Phase 3",
+                                path: "/dashboard/portfolio/saas/project/phase3",
+                              },
+                            ].map((item) => (
+                              <Link
+                                key={item.name}
+                                to={item.path}
+                                onClick={() => setIsSidebarOpen(false)}
+                                className={`block py-1.5 pl-3 text-sm font-medium rounded-lg transition-colors ${
+                                  location.pathname === item.path
+                                    ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                                    : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-gray-200"
+                                }`}
+                              >
+                                <span className="text-black dark:text-inherit">
+                                  {item.name}
+                                </span>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      {/* Process (direct link) */}
+                      <Link
+                        to="/dashboard/portfolio/saas/process"
+                        onClick={() => setIsSidebarOpen(false)}
+                        className={`block py-1.5 pl-2 text-sm font-medium rounded-lg transition-colors ${
+                          location.pathname ===
+                          "/dashboard/portfolio/saas/process"
+                            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                            : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-gray-200"
+                        }`}
+                      >
+                        <span className="dark:text-inherit">Process</span>
+                      </Link>
+                      {/* Block (direct link) */}
+                      <Link
+                        to="/dashboard/portfolio/saas/block"
+                        onClick={() => setIsSidebarOpen(false)}
+                        className={`block py-1.5 pl-2 text-sm font-medium rounded-lg transition-colors ${
+                          location.pathname ===
+                          "/dashboard/portfolio/saas/block"
+                            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                            : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-gray-200"
+                        }`}
+                      >
+                        <span className="dark:text-inherit">Block</span>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+                {/* Ecommerce */}
+                <Link
+                  to="/dashboard/portfolio/ecommerce"
+                  onClick={() => setIsSidebarOpen(false)}
+                  className={`block py-2 text-sm font-medium rounded-lg transition-colors ${
+                    location.pathname.includes("ecommerce")
+                      ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                      : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-gray-200"
+                  }`}
+                >
+                  <span className="dark:text-inherit">Ecommerce</span>
+                </Link>
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
               </div>
             </div>
           </div>
         </nav>
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
         <div className="mt-auto pt-6 flex flex-col gap-1">
           <button
             onClick={toggleDarkMode}
