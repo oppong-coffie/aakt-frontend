@@ -397,9 +397,9 @@ const CreateGoalModal = ({
   const [deliverableInput, setDeliverableInput] = useState("");
   const [metrics, setMetrics] = useState<string[]>([]);
   const [metricInput, setMetricInput] = useState("");
-  const [mustHave, setMustHave] = useState<string[]>([]);
-  const [niceToHave, setNiceToHave] = useState<string[]>([]);
-  const [wontHave, setWontHave] = useState<string[]>([]);
+  const [mustHave] = useState<string[]>([]);
+  const [niceToHave] = useState<string[]>([]);
+  const [wontHave] = useState<string[]>([]);
 
   const handleAddDeliverable = () => {
     if (deliverableInput.trim()) {

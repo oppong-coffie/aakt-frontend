@@ -161,7 +161,6 @@ const Saas = () => {
       
       const fetchProjects = async () => {
         try {
-          setLoadingProjects(true);
           const response = await fetch(`http://localhost:3000/portfolio/projects/${businessId}`, {
             headers: {
               "Content-Type": "application/json",
@@ -175,7 +174,6 @@ const Saas = () => {
         } catch (e) {
           console.error("Failed to fetch projects:", e);
         } finally {
-          setLoadingProjects(false);
         }
       };
       
@@ -188,7 +186,6 @@ const Saas = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [projects, setProjects] = useState<any[]>([]);
-  const [loadingProjects, setLoadingProjects] = useState(false);
   const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<{
     id: string;

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import {
@@ -1074,7 +1074,7 @@ const Homepage = () => {
                                 {workload.tasks.length} Tasks
                               </span>
                               <div className="flex -space-x-1">
-                                {workload.tasks.slice(0, 3).map((_, i) => (
+                                {workload.tasks.slice(0, 3).map((_: any, i: number) => (
                                   <div
                                     key={i}
                                     className="w-2.5 h-2.5 rounded-full bg-blue-100 border border-white"

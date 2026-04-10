@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import Breadcrumbs from "../../components/Breadcrumbs";
-import { portfolioService, type Process as ProcessType, type Task, type Agent, type TaskStep } from "../../api/portfolio.service";
+import { portfolioService, type Agent } from "../../api/portfolio.service";
 
 /**
  * Process Page (Portfolio) - A detailed view for managing business processes.
@@ -324,14 +324,12 @@ const Process = () => {
 
   const [processesList, setProcessesList] = useState<any[]>([]);
   const [selectedProcessId, setSelectedProcessId] = useState<string | null>(null);
-  const [process, setProcess] = useState<ProcessType | null>(null);
   const [tasks, setTasks] = useState<any[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [newTask, setNewTask] = useState({ name: "", agentIds: [] as string[] });
 
-  const [people, setPeople] = useState<Array<{ name: string; seed: string }>>([
+  const [people] = useState<Array<{ name: string; seed: string }>>([
     { name: "Felix", seed: "Felix" },
     { name: "Aneka", seed: "Aneka" },
     { name: "Jace", seed: "Jace" },
@@ -341,7 +339,6 @@ const Process = () => {
   useEffect(() => {
     const loadProcess = async () => {
       try {
-        setLoading(true);
         const portfolioId = localStorage.getItem("portfolioId") || "default";
         if (phaseId) {
           try {
@@ -371,7 +368,6 @@ const Process = () => {
       } catch (err) {
         console.error("Failed to load process:", err);
       } finally {
-        setLoading(false);
       }
     };
     loadProcess();
@@ -730,7 +726,7 @@ const Process = () => {
                           {task.steps && task.steps.length > 0 && (
                             <div className="mt-3 space-y-2">
                               <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">Steps:</p>
-                              {task.steps.map((step, idx) => (
+                              {task.steps.map((step: any, idx: number) => (
                                 <div key={idx} className="text-xs text-gray-600 dark:text-gray-400 ml-2">
                                   {idx + 1}. {step.type === "command" && `Command: ${step.content}`}
                                   {step.type === "deliverable" && `Deliverable (Block: ${step.blockId})`}

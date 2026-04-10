@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import Breadcrumbs from "../../components/Breadcrumbs";
-import { portfolioService, type Task, type Agent } from "../../api/portfolio.service";
+import { portfolioService, type Agent } from "../../api/portfolio.service";
 
 /**
  * ProcessByBusiness Page (Portfolio) - A detailed view for managing ALL business processes.
@@ -326,11 +326,10 @@ const ProcessByBusiness = () => {
   const [selectedProcessId, setSelectedProcessId] = useState<string | null>(null);
   const [tasks, setTasks] = useState<any[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [newTask, setNewTask] = useState({ name: "", agentIds: [] as string[] });
 
-  const [people, setPeople] = useState<Array<{ name: string; seed: string }>>([
+  const [people] = useState<Array<{ name: string; seed: string }>>([
     { name: "Felix", seed: "Felix" },
     { name: "Aneka", seed: "Aneka" },
     { name: "Jace", seed: "Jace" },
@@ -340,7 +339,6 @@ const ProcessByBusiness = () => {
   useEffect(() => {
     const loadProcess = async () => {
       try {
-        setLoading(true);
         const portfolioId = localStorage.getItem("portfolioId") || "default";
         
         // Fetch agents first
@@ -372,7 +370,6 @@ const ProcessByBusiness = () => {
       } catch (err) {
         console.error("Failed to load process:", err);
       } finally {
-        setLoading(false);
       }
     };
     loadProcess();
