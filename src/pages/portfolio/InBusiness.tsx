@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { API_URL } from "../../config/api";
 import PageLayout from "../../components/PageLayout";
 import PageHeader from "../../components/PageHeader";
 import EditItemModal from "../../components/EditItemModal";
@@ -161,7 +162,7 @@ const Saas = () => {
       
       const fetchProjects = async () => {
         try {
-          const response = await fetch(`http://localhost:3000/portfolio/projects/${businessId}`, {
+          const response = await fetch(`${API_URL}/portfolio/projects/${businessId}`, {
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${localStorage.getItem("token") || ""}`

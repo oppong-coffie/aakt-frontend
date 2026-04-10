@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_URL } from "../config/api";
 
 const ArrowLeftIcon = () => (
   <svg
@@ -27,7 +28,7 @@ const Step = () => {
       console.log("Answer:", answer);
       const token = localStorage.getItem("token");
       await axios.post(
-        "http://localhost:3000/onboarding/step",
+        `${API_URL}/onboarding/step`,
         { step: answer },
         {
           headers: {

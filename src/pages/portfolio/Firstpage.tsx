@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { API_URL } from "../../config/api";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import SearchModal from "../../components/SearchModal";
 
@@ -59,7 +60,7 @@ const PortfolioMain = () => {
     const fetchBusinesses = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:3000/portfolio", {
+        const res = await fetch(`${API_URL}/portfolio`, {
           headers: {
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),

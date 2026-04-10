@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_URL } from "../config/api";
 
 const ArrowLeftIcon = () => (
   <svg
@@ -74,7 +75,7 @@ const Skills = () => {
       console.log("Payload:", payload);
 
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:3000/onboarding/skills", payload, {
+      await axios.post(`${API_URL}/onboarding/skills`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

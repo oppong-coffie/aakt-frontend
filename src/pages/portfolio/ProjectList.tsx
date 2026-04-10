@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { API_URL } from "../../config/api";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import EditItemModal from "../../components/EditItemModal";
 import SearchModal from "../../components/SearchModal";
@@ -203,7 +204,7 @@ const AddProjectModal = ({
     setError("");
 
     try {
-      const response = await fetch("http://localhost:3000/portfolio/projects", {
+      const response = await fetch(`${API_URL}/portfolio/projects`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -346,7 +347,7 @@ const ProjectList = () => {
       const urlId = businessId || "a";
       try {
         setIsLoading(true);
-        const res = await fetch(`http://localhost:3000/portfolio/projects/${urlId}`, {
+        const res = await fetch(`${API_URL}/portfolio/projects/${urlId}`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token") || ""}`

@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_URL } from "../config/api";
 
 const ArrowLeftIcon = () => (
   <svg
@@ -64,7 +65,7 @@ const Feeling = () => {
       console.log("Feeling Values:", values);
       const token = localStorage.getItem("token");
       await axios.post(
-        "http://localhost:3000/onboarding/feeling",
+        `${API_URL}/onboarding/feeling`,
         { feeling: values },
         {
           headers: {

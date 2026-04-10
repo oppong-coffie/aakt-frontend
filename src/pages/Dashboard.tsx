@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { Moon, Sun } from "lucide-react";
+import { API_URL } from "../config/api";
 
 /**
  * Dashboard Layout - The primary layout for the application's authenticated area.
@@ -135,7 +136,7 @@ const Dashboard = () => {
         setBusinessError(null);
 
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:3000/business", {
+        const response = await fetch(`${API_URL}/business`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_URL } from "../config/api";
 
 const ArrowLeftIcon = () => (
   <svg
@@ -50,7 +51,7 @@ const Confident = () => {
         },
       };
 
-      await axios.post("http://localhost:3000/onboarding/confident", payload, {
+      await axios.post(`${API_URL}/onboarding/confident`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

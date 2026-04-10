@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_URL } from "../config/api";
 
 // Get token from local storage
 const token = localStorage.getItem("token");
@@ -238,7 +239,7 @@ const Register2 = () => {
     if (!isFormValid) return;
 
     try {
-      await axios.post('http://localhost:3000/onboarding', {
+      await axios.post(`${API_URL}/onboarding`, {
         country,
         numberofbusinesses,
         teamsize,
@@ -249,7 +250,7 @@ const Register2 = () => {
         }
       });
 
-      await axios.post('http://localhost:3000/onboarding/send-otp', {}, {
+      await axios.post(`${API_URL}/onboarding/send-otp`, {}, {
         headers: {
           Authorization: `Bearer ${token}`
         }

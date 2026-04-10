@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_URL } from "../config/api";
 
 // Simple icons as SVG components
 const GoogleIcon = () => (
@@ -63,7 +64,7 @@ const Login = () => {
     console.log("Logging in with:", email, password);
 
     try {
-      const response = await axios.post("http://localhost:3000/auth/login", {
+      const response = await axios.post(`${API_URL}/auth/login`, {
         email,
         password,
       });
@@ -139,7 +140,7 @@ const Login = () => {
           <button
             type="button"
             onClick={() => {
-              window.location.href = "http://localhost:3000/auth/google-login";
+              window.location.href = `${API_URL}/auth/google-login`;
             }}
             className="flex items-center w-full p-1.5 mt-1.5 border border-gray-200 rounded-lg bg-white text-gray-800 font-medium text-sm hover:bg-gray-50 gap-2.5 cursor-pointer transition-colors"
           >

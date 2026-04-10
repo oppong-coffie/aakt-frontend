@@ -10,6 +10,7 @@ import {
   type DropResult,
 } from "@hello-pangea/dnd";
 import { portfolioService, type Project as ProjectType, type Agent } from "../../api/portfolio.service";
+import { API_URL } from "../../config/api";
 
 /**
  * Project Page (Portfolio) - Displays the phases of a selected project.
@@ -663,7 +664,7 @@ const AddPhaseModal = ({
     setError("");
 
     try {
-      const response = await fetch("http://localhost:3000/portfolio/phases", {
+      const response = await fetch(`${API_URL}/portfolio/phases`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -818,7 +819,7 @@ const Project = () => {
           }
 
           try {
-            const phasesRes = await fetch(`http://localhost:3000/portfolio/phases/${projectId}`, {
+            const phasesRes = await fetch(`${API_URL}/portfolio/phases/${projectId}`, {
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token") || ""}`

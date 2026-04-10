@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_URL } from "../config/api";
 import { motion } from "framer-motion";
 
 const ArrowLeftIcon = () => (
@@ -36,7 +37,7 @@ const Stage = () => {
       console.log("Selected Stage:", selectedStage);
       const token = localStorage.getItem("token");
       await axios.post(
-        "http://localhost:3000/onboarding/stage",
+        `${API_URL}/onboarding/stage`,
         { stage: selectedStage.label },
         {
           headers: {

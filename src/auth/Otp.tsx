@@ -1,5 +1,5 @@
-import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../config/api";
 
 // Get token from local storage
 const token = localStorage.getItem("token");
@@ -20,7 +20,7 @@ const Otp = () => {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:3000/onboarding/verify-otp", {
+      const response = await fetch(`${API_URL}/onboarding/verify-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

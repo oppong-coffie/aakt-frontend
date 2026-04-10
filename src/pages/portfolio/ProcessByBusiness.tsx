@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import { portfolioService, type Agent } from "../../api/portfolio.service";
+import { API_URL } from "../../config/api";
 
 /**
  * ProcessByBusiness Page (Portfolio) - A detailed view for managing ALL business processes.
@@ -181,7 +182,7 @@ const AddProcessModal = ({
     setError("");
 
     try {
-      const response = await fetch("http://localhost:3000/portfolio/processes", {
+      const response = await fetch(`${API_URL}/portfolio/processes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -296,7 +297,7 @@ const ProcessByBusiness = () => {
   useEffect(() => {
     if (!resolvedBusinessId) {
       // Emergency fallback: fetch businesses from backend if URL and local storage let us down
-      fetch("http://localhost:3000/portfolio", {
+      fetch(`${API_URL}/portfolio`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` }
       })
       .then(res => res.json())
@@ -351,7 +352,7 @@ const ProcessByBusiness = () => {
         
         if (resolvedBusinessId) {
           // Fetch ALL processes for the business
-          const res = await fetch(`http://localhost:3000/portfolio/processes/all/${resolvedBusinessId}`, {
+          const res = await fetch(`${API_URL}/portfolio/processes/all/${resolvedBusinessId}`, {
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${localStorage.getItem("token") || ""}`
@@ -396,7 +397,7 @@ const ProcessByBusiness = () => {
   const handleAddTask = async () => {
     try {
       if (selectedProcessId && newTask.name) {
-        const response = await fetch("http://localhost:3000/portfolio/tasks", {
+        const response = await fetch(`${API_URL}/portfolio/tasks`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

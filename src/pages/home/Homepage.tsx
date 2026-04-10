@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "../../config/api";
 import {
   DragDropContext,
   Droppable,
@@ -377,7 +378,7 @@ const Homepage = () => {
         const token = getToken();
 
         // Fetch and log completed field
-        axios.get("http://localhost:3000/home/completed", {
+        axios.get(`${API_URL}/home/completed`, {
           headers: { Authorization: `Bearer ${token}` }
         }).then(res => {
           const compData = res.data?.completed ?? res.data;
@@ -398,7 +399,7 @@ const Homepage = () => {
         });
 
         const res = await axios.get(
-          "http://localhost:3000/workloads/getworkloadsbyuserid",
+          `${API_URL}/workloads/getworkloadsbyuserid`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const all: any[] = Array.isArray(res.data)
@@ -451,7 +452,7 @@ const Homepage = () => {
         // Call archive API
         axios
           .patch(
-            `http://localhost:3000/workloads/${archived.id}/archive`,
+            `${API_URL}/workloads/${archived.id}/archive`,
             {},
             { headers: { Authorization: `Bearer ${getToken()}` } }
           )
@@ -473,7 +474,7 @@ const Homepage = () => {
         // Call unarchive API
         axios
           .patch(
-            `http://localhost:3000/workloads/${restored.id}/inprogress`,
+            `${API_URL}/workloads/${restored.id}/inprogress`,
             {},
             { headers: { Authorization: `Bearer ${getToken()}` } }
           )
@@ -602,7 +603,7 @@ const Homepage = () => {
     try {
       const token = getToken();
       const res = await axios.post(
-        "http://localhost:3000/workloads",
+        `${API_URL}/workloads`,
         { workloadname: "New Workload" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -619,7 +620,7 @@ const Homepage = () => {
     if (confirm("Are you sure you want to delete this workload?")) {
       try {
         const token = getToken();
-        await axios.delete(`http://localhost:3000/workloads/${workloadId}`, {
+        await axios.delete(`${API_URL}/workloads/${workloadId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setWorkloads(workloads.filter((w) => w.id !== workloadId));
@@ -637,7 +638,7 @@ const Homepage = () => {
     try {
       const token = getToken();
       const res = await axios.post(
-        `http://localhost:3000/workloads/${workloadId}/tasks`,
+        `${API_URL}/workloads/${workloadId}/tasks`,
         { taskname: taskText.trim() },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -670,7 +671,7 @@ const Homepage = () => {
       const token = getToken();
       const endpoint = newCompleted ? "complete" : "todo";
       await axios.patch(
-        `http://localhost:3000/workloads/${workloadId}/tasks/${taskId}/${endpoint}`,
+        `${API_URL}/workloads/${workloadId}/tasks/${taskId}/${endpoint}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -698,7 +699,7 @@ const Homepage = () => {
     try {
       const token = getToken();
       await axios.delete(
-        `http://localhost:3000/workloads/${workloadId}/tasks/${taskId}`,
+        `${API_URL}/workloads/${workloadId}/tasks/${taskId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
     } catch (err) {
@@ -718,7 +719,7 @@ const Homepage = () => {
     try {
       const token = getToken();
       await axios.patch(
-        `http://localhost:3000/workloads/${workloadId}/tasks/${taskId}/name`,
+        `${API_URL}/workloads/${workloadId}/tasks/${taskId}/name`,
         { taskname: newText.trim() },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -850,7 +851,7 @@ const Homepage = () => {
                             if (!newName) return;
                             axios
                               .patch(
-                                `http://localhost:3000/workloads/${workload.id}/name`,
+                                `${API_URL}/workloads/${workload.id}/name`,
                                 { workloadname: newName },
                                 { headers: { Authorization: `Bearer ${getToken()}` } }
                               )
@@ -1035,7 +1036,7 @@ const Homepage = () => {
                                     setWorkloads([...workloads, workload]);
                                     axios
                                       .put(
-                                        `http://localhost:3000/workloads/${workload.id}/inprogress`,
+                                        `${API_URL}/workloads/${workload.id}/inprogress`,
                                         {},
                                         { headers: { Authorization: `Bearer ${getToken()}` } }
                                       )
@@ -1051,7 +1052,7 @@ const Homepage = () => {
                                     if (confirm("Delete this workload permanently?")) {
                                       try {
                                         await axios.delete(
-                                          `http://localhost:3000/workloads/${workload.id}`,
+                                          `${API_URL}/workloads/${workload.id}`,
                                           { headers: { Authorization: `Bearer ${getToken()}` } }
                                         );
                                       } catch (err) {
