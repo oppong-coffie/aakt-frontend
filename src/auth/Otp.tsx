@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-<<<<<<< HEAD
 // Get token from local storage
 const token = localStorage.getItem("token");
 
@@ -9,15 +8,10 @@ const Otp = () => {
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-=======
-const Otp = () => {
-  const [otp, setOtp] = useState("");
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
   const navigate = useNavigate();
 
   const isFormValid = otp.trim() !== "";
 
-<<<<<<< HEAD
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid || isLoading) return;
@@ -52,13 +46,6 @@ const Otp = () => {
     } finally {
       setIsLoading(false);
     }
-=======
-  const handleVerify = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isFormValid) return;
-    console.log("Verify OTP:", otp);
-    navigate("/stage");
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
   };
 
   return (
@@ -74,7 +61,6 @@ const Otp = () => {
             type="text"
             placeholder=""
             value={otp}
-<<<<<<< HEAD
             onChange={(e) => {
               setOtp(e.target.value);
               if (error) setError("");
@@ -87,25 +73,11 @@ const Otp = () => {
             disabled={!isFormValid || isLoading}
             className={`w-full p-2.5 mt-4 text-white border-none rounded-lg text-base font-semibold transition-all duration-300 shadow-md ${
               isFormValid && !isLoading
-=======
-            onChange={(e) => setOtp(e.target.value)}
-          />
-
-          <button
-            type="submit"
-            disabled={!isFormValid}
-            className={`w-full p-2.5 mt-4 text-white border-none rounded-lg text-base font-semibold transition-all duration-300 shadow-md ${
-              isFormValid
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
                 ? "bg-blue-600 cursor-pointer hover:bg-blue-700 hover:shadow-lg"
                 : "bg-[#94A6FD] cursor-not-allowed opacity-70 shadow-none"
             }`}
           >
-<<<<<<< HEAD
             {isLoading ? "Verifying..." : "Verify"}
-=======
-            Verify
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
           </button>
         </form>
       </div>

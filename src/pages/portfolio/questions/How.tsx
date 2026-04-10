@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import { useState, useEffect } from "react";
-=======
-import { useState } from "react";
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
 import { Link, useNavigate } from "react-router-dom";
 
 const LeftArrowIcon = () => (
@@ -27,7 +23,6 @@ const How = () => {
   const navigate = useNavigate();
   const [selected, setSelected] = useState<string[]>([]);
 
-<<<<<<< HEAD
   const optionsMap: Record<string, string> = {
     "Online Store / E-commerce": "online_store",
     "Direct Sales (B2B)": "direct_sales",
@@ -48,18 +43,6 @@ const How = () => {
       setSelected(JSON.parse(saved));
     }
   }, []);
-=======
-  const options = [
-    "Online Store / E-commerce",
-    "Direct Sales (B2B)",
-    "Retail / Physical Store",
-    "Subscription Model",
-    "Freemium Model",
-    "Marketplace",
-    "Consulting / Services",
-    "Partnerships / Resellers",
-  ];
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
 
   const toggleOption = (option: string) => {
     setSelected((prev) =>
@@ -69,14 +52,11 @@ const How = () => {
     );
   };
 
-<<<<<<< HEAD
   const handleContinue = () => {
     localStorage.setItem("bizConcept_goToMarket", JSON.stringify(selected));
     navigate("/dashboard/portfolio/questions/culture");
   };
 
-=======
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
   return (
     <div className="flex flex-col h-full bg-[#f0f0eb] dark:bg-slate-950 p-6 sm:p-12 font-sans text-gray-900 dark:text-gray-100 justify-center items-center relative min-h-screen transition-colors duration-300">
       <button
@@ -88,10 +68,7 @@ const How = () => {
 
       <Link
         to="/dashboard/portfolio/questions/culture"
-<<<<<<< HEAD
         onClick={() => localStorage.setItem("bizConcept_goToMarket", JSON.stringify(selected))}
-=======
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
         className="absolute top-6 right-6 px-4 py-2 text-gray-400 dark:text-gray-500 font-bold hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors z-10"
       >
         Skip
@@ -129,20 +106,12 @@ const How = () => {
       {/* Footer / Buttons */}
       <div className="fixed bottom-0 left-0 right-0 p-6 sm:p-12 flex justify-end gap-4 max-w-7xl mx-auto w-full pointer-events-none">
         <div className="pointer-events-auto flex gap-4">
-<<<<<<< HEAD
           <button
             onClick={handleContinue}
             className="px-8 py-3 rounded-xl bg-blue-600 dark:bg-blue-500 text-white font-bold hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-lg shadow-blue-600/20 dark:shadow-blue-500/10"
           >
             Continue
           </button>
-=======
-          <Link to="/dashboard/portfolio/questions/culture">
-            <button className="px-8 py-3 rounded-xl bg-blue-600 dark:bg-blue-500 text-white font-bold hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-lg shadow-blue-600/20 dark:shadow-blue-500/10">
-              Continue
-            </button>
-          </Link>
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
         </div>
       </div>
     </div>

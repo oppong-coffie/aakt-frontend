@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
 import axios from "axios";
-=======
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
 
 const ArrowLeftIcon = () => (
   <svg
@@ -56,7 +53,6 @@ const Skills = () => {
     );
   };
 
-<<<<<<< HEAD
   const handleContinue = async () => {
     try {
       const getSkillsByCategory = (category: Category) =>
@@ -94,15 +90,6 @@ const Skills = () => {
 
   const handleSkip = () => {
     navigate("/dashboard/home");
-=======
-  const handleContinue = () => {
-    console.log("Selected Skills:", selectedSkills);
-    navigate("/step");
-  };
-
-  const handleSkip = () => {
-    navigate("/step");
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
   };
 
   // Group skills by category
@@ -119,11 +106,7 @@ const Skills = () => {
 
   const categories: Category[] = ["Product", "Strategy", "Team", "Finance"];
 
-  // Check if at least one skill is selected (optional, user said "don't need to choose one of each type")
-  // User request: "In “Select which skills you feel defines you?”, they don’t need to choose one of each type"
-  // So we just check if ANY skill is selected, or maybe even allow empty? Generally "defines you" implies selecting at least one.
-  // I will require at least one skill for "Continue" to be active, or just always valid if skipping is allowed via Skip button.
-  // Given there is a Skip button, Continue probably implies "I have made my selection".
+  // Check if at least one skill is selected
   const isValidSelection = selectedSkills.length > 0;
 
   return (

@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
 import axios from "axios";
-=======
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
 
 const ArrowLeftIcon = () => (
   <svg
@@ -39,7 +36,6 @@ const Confident = () => {
     setValues((prev) => ({ ...prev, [metric]: value }));
   };
 
-<<<<<<< HEAD
   const handleContinue = async () => {
     try {
       console.log("Confidence Values:", values);
@@ -70,15 +66,6 @@ const Confident = () => {
 
   const handleSkip = () => {
     navigate("/dashboard/home");
-=======
-  const handleContinue = () => {
-    console.log("Confidence Values:", values);
-    navigate("/feeling");
-  };
-
-  const handleSkip = () => {
-    navigate("/feeling");
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
   };
 
   return (
@@ -104,14 +91,14 @@ const Confident = () => {
         </button>
       </div>
 
-{/* Question */}
-      <div className="mt-20 mb-16 flex justify-center">
+      {/* Question */}
+      <div className="mt-20 mb-16 flex justify-center text-center">
         <h2 className="text-2xl font-bold text-gray-900 leading-relaxed">
           How confident are you in the following to achieve your 12 month goals?
         </h2>
       </div>
 
-{/* Slider */}
+      {/* Slider */}
       <div className="space-y-8 md:ml-48">
         {metrics.map((metric) => (
           <div key={metric} className="flex">

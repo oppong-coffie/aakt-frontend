@@ -1,12 +1,7 @@
-<<<<<<< HEAD
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import apiClient from "../../../api/apiClient";
 import { type BizConcept, type GoToMarketStrategy } from "../../../api/portfolio.service";
-=======
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
 
 const LeftArrowIcon = () => (
   <svg
@@ -29,7 +24,6 @@ const LeftArrowIcon = () => (
 const Culture = () => {
   const navigate = useNavigate();
   const [value, setValue] = useState("");
-<<<<<<< HEAD
   const [loading, setLoading] = useState(false);
 
   // Load saved value from localStorage
@@ -96,8 +90,6 @@ const Culture = () => {
       setLoading(false);
     }
   };
-=======
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
 
   return (
     <div className="flex flex-col h-full bg-[#f0f0eb] dark:bg-slate-950 p-6 sm:p-12 font-sans text-gray-900 dark:text-gray-100 justify-center items-center relative min-h-screen transition-colors duration-300">
@@ -108,7 +100,6 @@ const Culture = () => {
         <LeftArrowIcon />
       </button>
 
-<<<<<<< HEAD
       <Link
         to="/dashboard/home"
         onClick={() => localStorage.setItem("bizConcept_culture", value)}
@@ -117,8 +108,6 @@ const Culture = () => {
         Skip
       </Link>
 
-=======
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
       <div className="max-w-3xl w-full flex flex-col gap-8">
         {/* Header */}
         <div className="flex flex-col gap-4">
@@ -144,7 +133,6 @@ const Culture = () => {
       {/* Footer / Buttons */}
       <div className="fixed bottom-0 left-0 right-0 p-6 sm:p-12 flex justify-end gap-4 max-w-7xl mx-auto w-full pointer-events-none">
         <div className="pointer-events-auto flex gap-4">
-<<<<<<< HEAD
           <button
             onClick={handleFinish}
             disabled={loading}
@@ -152,13 +140,6 @@ const Culture = () => {
           >
             {loading ? "Saving..." : "Finish"}
           </button>
-=======
-          <Link to="/dashboard/home">
-            <button className="px-8 py-3 rounded-xl bg-blue-600 dark:bg-blue-500 text-white font-bold hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-lg shadow-blue-600/20 dark:shadow-blue-500/10">
-              Finish
-            </button>
-          </Link>
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
         </div>
       </div>
     </div>

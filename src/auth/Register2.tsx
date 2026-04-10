@@ -1,13 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
 import axios from "axios";
 
 // Get token from local storage
 const token = localStorage.getItem("token");
 console.log(token);
-=======
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
 
 // Checkmark Icon
 const CheckIcon = () => (
@@ -229,7 +226,6 @@ const countries = [
 
 const Register2 = () => {
   const [country, setCountry] = useState("Ghana");
-<<<<<<< HEAD
   const [numberofbusinesses, setNumberofbusinesses] = useState(0);
   const [teamsize, setTeamsize] = useState("");
   const [referralcode, setReferralcode] = useState("");
@@ -265,20 +261,6 @@ const Register2 = () => {
       // fallback navigate anyway or show error
       navigate("/otp");
     }
-=======
-  const [numBusinesses, setNumBusinesses] = useState(0);
-  const [teamSize, setTeamSize] = useState("");
-  const [referralCode, setReferralCode] = useState("");
-
-  const navigate = useNavigate();
-
-  const isFormValid = country.trim() !== "" && teamSize.trim() !== "";
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isFormValid) return;
-    navigate("/otp");
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
   };
 
   return (
@@ -356,24 +338,15 @@ const Register2 = () => {
                 Number of Businesses
               </label>
               <span className="text-blue-600 font-bold text-sm">
-<<<<<<< HEAD
                 {numberofbusinesses === 20 ? "20+" : numberofbusinesses}
-=======
-                {numBusinesses === 20 ? "20+" : numBusinesses}
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
               </span>
             </div>
             <input
               type="range"
               min="0"
               max="20"
-<<<<<<< HEAD
               value={numberofbusinesses}
               onChange={(e) => setNumberofbusinesses(parseInt(e.target.value))}
-=======
-              value={numBusinesses}
-              onChange={(e) => setNumBusinesses(parseInt(e.target.value))}
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
             />
             <div className="flex justify-between text-[10px] text-gray-400 mt-1 px-1">
@@ -392,13 +365,8 @@ const Register2 = () => {
               className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-500 bg-gray-50/50"
               type="text"
               placeholder="e.g. 1-10, 50+"
-<<<<<<< HEAD
               value={teamsize}
               onChange={(e) => setTeamsize(e.target.value)}
-=======
-              value={teamSize}
-              onChange={(e) => setTeamSize(e.target.value)}
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
             />
           </div>
 
@@ -411,31 +379,18 @@ const Register2 = () => {
               className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-500 bg-gray-50/50"
               type="text"
               placeholder="Enter code"
-<<<<<<< HEAD
               value={referralcode}
               onChange={(e) => setReferralcode(e.target.value)}
-=======
-              value={referralCode}
-              onChange={(e) => setReferralCode(e.target.value)}
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
             />
           </div>
 
           <button
             type="submit"
             disabled={!isFormValid}
-<<<<<<< HEAD
             className={`w-full py-3.5 mt-4 bg-blue-600 text-white border-none rounded-xl text-base font-bold transition-all duration-300 shadow-lg shadow-blue-600/20 ${isFormValid
               ? "bg-blue-600 cursor-pointer hover:bg-blue-700 hover:scale-[1.02]"
               : "bg-gray-300 cursor-not-allowed shadow-none"
               }`}
-=======
-            className={`w-full py-3.5 mt-4 bg-blue-600 text-white border-none rounded-xl text-base font-bold transition-all duration-300 shadow-lg shadow-blue-600/20 ${
-              isFormValid
-                ? "bg-blue-600 cursor-pointer hover:bg-blue-700 hover:scale-[1.02]"
-                : "bg-gray-300 cursor-not-allowed shadow-none"
-            }`}
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
           >
             Continue
           </button>

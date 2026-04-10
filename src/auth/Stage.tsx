@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
 import axios from "axios";
-=======
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
 import { motion } from "framer-motion";
 
 const ArrowLeftIcon = () => (
@@ -34,7 +31,6 @@ const Stage = () => {
   const [selectedStage, setSelectedStage] = useState(stages[0]);
   const navigate = useNavigate();
 
-<<<<<<< HEAD
   const handleContinue = async () => {
     try {
       console.log("Selected Stage:", selectedStage);
@@ -59,15 +55,6 @@ const Stage = () => {
 
   const handleSkip = () => {
     navigate("/dashboard/home");
-=======
-  const handleContinue = () => {
-    console.log("Selected Stage:", selectedStage);
-    navigate("/skills");
-  };
-
-  const handleSkip = () => {
-    navigate("/skills");
->>>>>>> c1832823bd770c159a49d2a042dd2d75b0c902d9
   };
 
   return (
