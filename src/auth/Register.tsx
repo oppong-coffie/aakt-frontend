@@ -73,22 +73,26 @@ const Register = () => {
         password,
       });
 
+      console.log("Registration response:", response);
       if (response.status === 200 || response.status === 201) {
+        console.log("Registration successful, navigating to /otp...");
         if (response.data.token) {
           localStorage.setItem("token", response.data.token);
+          console.log("Token saved to localStorage");
         }
         navigate("/otp");
       }
     } catch (error: any) {
+      console.error("Registration failed:", error);
       if (error.response) {
-        if (error.response.status === 500) {
-          alert("User already exists, please login or click forgot password");
-          navigate("/login");
+        console.error("Error data:", error.response.data);
+        if (error.response.status === 400 || error.response.status === 500) {
+          alert(error.response.data.error || "User already exists or registration failed. Please try a different email.");
         } else {
-          alert("Something went wrong. Please try again.");
+          alert(`Error ${error.response.status}: Something went wrong.`);
         }
       } else {
-        console.error("Network error:", error);
+        alert("Network error: Please check your internet connection.");
       }
     }
   };
