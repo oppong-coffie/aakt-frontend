@@ -67,8 +67,8 @@ const Culture = () => {
         culture,
       };
 
-      // Submit all data to /portfolio
-      await apiClient.post("/portfolio", {
+      // Submit all data to /business
+      await apiClient.post("/business", {
         businessName,
         businessImage,
         bizConcept,

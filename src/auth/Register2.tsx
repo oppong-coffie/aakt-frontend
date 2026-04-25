@@ -250,12 +250,6 @@ const Register2 = () => {
         }
       });
 
-      await axios.post(`${API_URL}/onboarding/send-otp`, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
       navigate("/otp");
     } catch (err) {
       console.error("Failed to save onboarding business info or send OTP", err);

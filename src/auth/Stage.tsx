@@ -45,17 +45,18 @@ const Stage = () => {
           },
         }
       );
-      navigate("/dashboard/home");
+      
+      navigate("/skills");
     } catch (error) {
       console.error("Failed to save onboarding stage:", error);
       // Optional: Show error to user or navigate anyway?
       // For now, let's navigate to keep the flow moving, but log the error.
-      navigate("/dashboard/home");
+      navigate("/skills");
     }
   };
 
   const handleSkip = () => {
-    navigate("/dashboard/home");
+    navigate("/skills");
   };
 
   return (

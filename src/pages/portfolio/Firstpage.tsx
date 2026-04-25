@@ -60,7 +60,7 @@ const PortfolioMain = () => {
     const fetchBusinesses = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${API_URL}/portfolio`, {
+        const res = await fetch(`${API_URL}/business`, {
           headers: {
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -149,6 +149,7 @@ const PortfolioMain = () => {
                           {item.label}
                         </span>
                       </button>
+                      
                     ))}
                   </motion.div>
                 </>

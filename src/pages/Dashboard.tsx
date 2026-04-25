@@ -110,7 +110,7 @@ const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [bizInfraOpen, setBizInfraOpen] = useState(false);
   const [portfolioOpen, setPortfolioOpen] = useState(false);
-  const [businesses, setBusinesses] = useState<Array<{ _id: string; name: string }>>([]);
+  const [businesses, setBusinesses] = useState<Array<{ _id: string; businessName: string }>>([]);
   const [businessLoading, setBusinessLoading] = useState(true);
   const [businessError, setBusinessError] = useState<string | null>(null);
   const [navCollapsed, setNavCollapsed] = useState(false);
@@ -144,12 +144,17 @@ const Dashboard = () => {
           },
         });
 
+        console.log(response);
+
         if (!response.ok) {
           throw new Error(`HTTP error ${response.status}`);
         }
 
         const data = await response.json();
-        setBusinesses(Array.isArray(data) ? data : []);
+        // The backend returns businesses in a 'data' property
+        const businessList = Array.isArray(data.data) ? data.data : [];
+        setBusinesses(businessList);
+        console.log("Loaded businesses:", businessList);
       } catch (error) {
         console.error("Failed to load businesses", error);
         setBusinessError("Failed to load your businesses. Please refresh.");
@@ -468,7 +473,7 @@ const Dashboard = () => {
                             : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-800 dark:hover:text-gray-100"
                         }`}
                       >
-                        {business.name}
+                        {business.businessName}
                       </Link>
                     ))}
                   </div>

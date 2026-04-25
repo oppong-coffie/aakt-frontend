@@ -57,16 +57,16 @@ const Confident = () => {
         },
       });
 
-      navigate("/dashboard/home");
+      navigate("/feeling");
     } catch (error) {
       console.error("Failed to save onboarding confidence:", error);
       // Navigate anyway to keep flow moving, but log error
-      navigate("/dashboard/home");
+      navigate("/feeling");
     }
   };
 
   const handleSkip = () => {
-    navigate("/dashboard/home");
+    navigate("/feeling");
   };
 
   return (

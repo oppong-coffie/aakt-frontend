@@ -81,16 +81,16 @@ const Skills = () => {
         },
       });
 
-      navigate("/dashboard/home");
+      navigate("/step");
     } catch (error) {
       console.error("Failed to save onboarding skills:", error);
       // Navigate anyway to keep flow moving, but log error
-      navigate("/dashboard/home");
+      navigate("/step");
     }
   };
 
   const handleSkip = () => {
-    navigate("/dashboard/home");
+    navigate("/step");
   };
 
   // Group skills by category
