@@ -1,8 +1,7 @@
 import { MemoryRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./auth/Login";
 import Register from "./auth/Register";
-import Register1 from "./auth/Register2";
-import Register2 from "./auth/Register2";
+import Onboard from "./auth/Onboard";
 import Otp from "./auth/Otp";
 import Stage from "./auth/Stage";
 import Skills from "./auth/Skills";
@@ -54,8 +53,8 @@ const App = () => {
         {/* Public Routes */}
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Login />} />
-        <Route path="/register1" element={<Register1 />} />
-        <Route path="/register2" element={<Register2 />} />
+        {/* <Route path="/register1" element={<Register1 />} /> */}
+        <Route path="/onboard" element={<Onboard />} />
         <Route path="/otp" element={<Otp />} />
         <Route path="/stage" element={<Stage />} />
         <Route path="/skills" element={<Skills />} />

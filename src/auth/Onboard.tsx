@@ -250,11 +250,11 @@ const Register2 = () => {
         }
       });
 
-      navigate("/otp");
+      navigate("/stage");
     } catch (err) {
       console.error("Failed to save onboarding business info or send OTP", err);
       // fallback navigate anyway or show error
-      navigate("/otp");
+      navigate("/stage");
     }
   };
 
