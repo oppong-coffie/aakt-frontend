@@ -3,12 +3,6 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import { Moon, Sun } from "lucide-react";
 import { API_URL } from "../config/api";
 
-/**
- * Dashboard Layout - The primary layout for the application's authenticated area.
- * Features a persistent Sidebar (navigation), a main content area (Outlet),
- * and integrated Botpress webchat for support.
- */
-
 // Icons (Simple SVGs)
 const HomeIcon = () => (
   <svg
@@ -110,6 +104,7 @@ const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [bizInfraOpen, setBizInfraOpen] = useState(false);
   const [portfolioOpen, setPortfolioOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [businesses, setBusinesses] = useState<Array<{ _id: string; businessName: string }>>([]);
   const [businessLoading, setBusinessLoading] = useState(true);
   const [businessError, setBusinessError] = useState<string | null>(null);
@@ -167,36 +162,6 @@ const Dashboard = () => {
   }, []);
 
   const toggleDarkMode = () => setIsDarkMode((prev) => !prev);
-
-  // Auto-expansion logic removed as per user request
-
-  useEffect(() => {
-    const initBotpress = () => {
-      if (!window.botpressWebChat) return;
-
-      window.botpressWebChat.init({
-        botId: "YOUR_BOT_ID",
-        clientId: "YOUR_CLIENT_ID",
-        hostUrl: "https://cdn.botpress.cloud/webchat/v1",
-        messagingUrl: "https://messaging.botpress.cloud",
-        lazySocket: true,
-        showPoweredBy: false,
-      });
-    };
-
-    // try immediately
-    initBotpress();
-
-    // fallback: in case script loads after component mounts
-    const interval = setInterval(() => {
-      if (window.botpressWebChat) {
-        initBotpress();
-        clearInterval(interval);
-      }
-    }, 300);
-
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <div className="flex h-screen bg-[#f0f0eb] dark:bg-slate-950 font-sans overflow-hidden transition-colors duration-300">
@@ -309,90 +274,7 @@ const Dashboard = () => {
             </span>
           </Link>
 
-          {/* BizInfra Group */}
-          <div className="space-y-1">
-            <div
-              className={`group flex items-center justify-between gap-2 mb-2 ${
-                navCollapsed ? "px-2" : "px-4"
-              } py-2 rounded-xl transition-colors duration-200 ${
-                location.pathname.startsWith("/dashboard/bizinfra")
-                  ? "bg-gray-200/80 dark:bg-slate-800 shadow-sm border border-gray-300/50 dark:border-slate-700 text-gray-900 dark:text-white"
-                  : "hover:bg-gray-100 dark:hover:bg-slate-800"
-              }`}
-            >
-              <Link
-                to="/dashboard/bizinfra"
-                onClick={() => setIsSidebarOpen(false)}
-                className={`flex items-center ${
-                  navCollapsed ? "justify-center" : "gap-3"
-                } font-bold text-xs uppercase tracking-wider transition-colors duration-200`}
-                title={navCollapsed ? "BizInfra" : undefined}
-              >
-                <BizIcon />
-                <span
-                  className={navCollapsed ? "hidden" : "dark:text-gray-300"}
-                >
-                  BizInfra
-                </span>
-              </Link>
-              {!navCollapsed && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setBizInfraOpen((o) => !o);
-                  }}
-                  className="p-1 rounded transition-colors duration-200 hover:bg-gray-200/80 group-hover:bg-gray-200/80"
-                  aria-label={
-                    bizInfraOpen
-                      ? "Collapse BizInfra menu"
-                      : "Expand BizInfra menu"
-                  }
-                >
-                  <ChevronIcon open={bizInfraOpen} />
-                </button>
-              )}
-            </div>
-            <div
-              className={`overflow-hidden transition-all duration-200 ease-out ${
-                navCollapsed
-                  ? "hidden"
-                  : bizInfraOpen
-                    ? "max-h-[320px] opacity-100"
-                    : "max-h-0 opacity-70"
-              }`}
-            >
-              <div className="pl-4 space-y-1 border-l-2 border-gray-100 ml-5">
-                {[
-                  { name: "Skillset", icon: "/bizinfra/skill2.png" },
-                  { name: "Network", icon: "/bizinfra/network.png" },
-                  { name: "Intel", icon: "/bizinfra/intel2.png" },
-                  { name: "Capital", icon: "/bizinfra/capital.png" },
-                  { name: "Reach", icon: "/bizinfra/reach.png" },
-                ].map((item) => (
-                  <Link
-                    key={item.name}
-                    to={`/dashboard/bizinfra/${item.name.toLowerCase()}`}
-                    onClick={() => setIsSidebarOpen(false)}
-                    className={`flex text-black items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors
-                      ${
-                        location.pathname.includes(item.name.toLowerCase())
-                          ? "bg-blue-50 dark:bg-blue-900/20 text-black dark:text-blue-400"
-                          : "text-black dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-gray-200"
-                      }
-                    `}
-                  >
-                    <img
-                      src={item.icon}
-                      alt=""
-                      className="w-4 h-4 object-contain opacity-70 group-hover:opacity-100 transition-opacity"
-                    />
-                    <span className="dark:text-inherit">{item.name}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
+       
 
           {/* Portfolio Group */}
           <div className="space-y-1 pt-2">
@@ -410,7 +292,7 @@ const Dashboard = () => {
                 onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center ${
                   navCollapsed ? "justify-center" : "gap-3"
-                } text-black font-bold text-xs uppercase tracking-wider transition-colors duration-200`}
+                } text-black font-bold text-xs tracking-wider transition-colors duration-200`}
                 title={navCollapsed ? "Business" : undefined}
               >
                 <PortfolioIcon />
@@ -482,27 +364,165 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <Link
-            to="/dashboard/settings"
-            onClick={() => setIsSidebarOpen(false)}
-            className={`flex items-center ${
-              navCollapsed ? "px-2" : "gap-3 px-4"
-            } py-2.5 rounded-xl transition-colors duration-200 ${
-              location.pathname === "/dashboard/settings"
-                ? "bg-gray-200/80 dark:bg-slate-800 shadow-sm border border-gray-300/50 dark:border-slate-700 text-gray-900 dark:text-white"
-                : "text-black dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white"
-            }`}
-            title={navCollapsed ? "Settings" : undefined}
-          >
-            <div className="w-6 flex justify-center">
-              <SettingsIcon />
-            </div>
-            <span
-              className={`font-medium dark:text-inherit text-sm ${navCollapsed ? "hidden" : ""}`}
+             {/* BizInfra Group */}
+          <div className="space-y-1">
+            <div
+              className={`group flex items-center justify-between gap-2 mb-2 ${
+                navCollapsed ? "px-2" : "px-4"
+              } py-2 rounded-xl transition-colors duration-200 ${
+                location.pathname.startsWith("/dashboard/bizinfra")
+                  ? "bg-gray-200/80 dark:bg-slate-800 shadow-sm border border-gray-300/50 dark:border-slate-700 text-gray-900 dark:text-white"
+                  : "hover:bg-gray-100 dark:hover:bg-slate-800"
+              }`}
             >
-              Settings
-            </span>
-          </Link>
+              <Link
+                to="/dashboard/bizinfra"
+                onClick={() => setIsSidebarOpen(false)}
+                className={`flex items-center ${
+                  navCollapsed ? "justify-center" : "gap-3"
+                } font-bold text-xs tracking-wider transition-colors duration-200`}
+                title={navCollapsed ? "BizInfra" : undefined}
+              >
+                <BizIcon />
+                <span
+                  className={navCollapsed ? "hidden" : "dark:text-gray-300"}
+                >
+                  Tools
+                </span>
+              </Link>
+              {!navCollapsed && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setBizInfraOpen((o) => !o);
+                  }}
+                  className="p-1 rounded transition-colors duration-200 hover:bg-gray-200/80 group-hover:bg-gray-200/80"
+                  aria-label={
+                    bizInfraOpen
+                      ? "Collapse BizInfra menu"
+                      : "Expand BizInfra menu"
+                  }
+                >
+                  <ChevronIcon open={bizInfraOpen} />
+                </button>
+              )}
+            </div>
+            <div
+              className={`overflow-hidden transition-all duration-200 ease-out ${
+                navCollapsed
+                  ? "hidden"
+                  : bizInfraOpen
+                    ? "max-h-[320px] opacity-100"
+                    : "max-h-0 opacity-70"
+              }`}
+            >
+              <div className="pl-4 space-y-1 border-l-2 border-gray-100 ml-5">
+                {[
+                  { name: "Skillset", icon: "/bizinfra/skill2.png" },
+                  { name: "Network", icon: "/bizinfra/network.png" },
+                  { name: "Intel", icon: "/bizinfra/intel2.png" },
+                  { name: "Capital", icon: "/bizinfra/capital.png" },
+                  { name: "Reach", icon: "/bizinfra/reach.png" },
+                ].map((item) => (
+                  <Link
+                    key={item.name}
+                    to={`/dashboard/bizinfra/${item.name.toLowerCase()}`}
+                    onClick={() => setIsSidebarOpen(false)}
+                    className={`flex text-black items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors
+                      ${
+                        location.pathname.includes(item.name.toLowerCase())
+                          ? "bg-blue-50 dark:bg-blue-900/20 text-black dark:text-blue-400"
+                          : "text-black dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-gray-200"
+                      }
+                    `}
+                  >
+                    <img
+                      src={item.icon}
+                      alt=""
+                      className="w-4 h-4 object-contain opacity-70 group-hover:opacity-100 transition-opacity"
+                    />
+                    <span className="dark:text-inherit">{item.name}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Settings Group */}
+          <div className="space-y-1 pt-2">
+            <div
+              className={`group flex items-center justify-between gap-2 mb-2 ${
+                navCollapsed ? "px-2" : "px-4"
+              } py-2 rounded-xl transition-colors duration-200 ${
+                location.pathname.startsWith("/dashboard/settings")
+                  ? "bg-gray-200/80 dark:bg-slate-800 shadow-sm border border-gray-300/50 dark:border-slate-700 text-gray-900 dark:text-white"
+                  : "hover:bg-gray-100 dark:hover:bg-slate-800"
+              }`}
+            >
+              <Link
+                to="/dashboard/settings"
+                onClick={() => setIsSidebarOpen(false)}
+                className={`flex items-center ${
+                  navCollapsed ? "justify-center" : "gap-3"
+                } text-black font-bold text-xs tracking-wider transition-colors duration-200`}
+                title={navCollapsed ? "Settings" : undefined}
+              >
+                <div className="w-6 flex justify-center"><SettingsIcon /></div>
+                <span
+                  className={navCollapsed ? "hidden" : "dark:text-gray-300"}
+                >
+                  Settings
+                </span>
+              </Link>
+              {!navCollapsed && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setSettingsOpen((o) => !o);
+                  }}
+                  className="p-1 rounded transition-colors duration-200 hover:bg-gray-200/80 group-hover:bg-gray-200/80"
+                  aria-label={
+                    settingsOpen
+                      ? "Collapse Settings menu"
+                      : "Expand Settings menu"
+                  }
+                >
+                  <ChevronIcon open={settingsOpen} />
+                </button>
+              )}
+            </div>
+            <div
+              className={`overflow-hidden transition-all duration-200 ease-out ${
+                navCollapsed
+                  ? "hidden"
+                  : settingsOpen
+                    ? "max-h-[320px] opacity-100"
+                    : "max-h-0 opacity-70"
+              }`}
+            >
+              <div className="pl-4 space-y-1 border-l-2 border-gray-100 ml-5">
+                {[
+                  { name: "Template" },
+                  { name: "Integrations" }
+                ].map((item) => (
+                  <Link
+                    key={item.name}
+                    to={`/dashboard/settings/${item.name.toLowerCase()}`}
+                    onClick={() => setIsSidebarOpen(false)}
+                    className={`block py-2 px-2 rounded-lg text-sm font-medium transition-colors ${
+                      location.pathname.includes(item.name.toLowerCase())
+                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-800 dark:hover:text-gray-100"
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
         </nav>
 
         {/* Bottom Actions */}

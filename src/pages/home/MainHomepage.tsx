@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 
 import SearchModal from "../../components/SearchModal";
+import DodoWidget from "../../components/DodoWidget";
 
 /**
  * Main Homepage Layout - A wrapper for the Home module routes.
@@ -53,6 +54,7 @@ const MainHomepage = () => {
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
       />
+      <DodoWidget />
     </div>
   );
 };

@@ -58,8 +58,8 @@ const LeftArrowIcon = () => (
 
 const categories = [
   { id: "project", label: "Project" },
-  { id: "process", label: "Process" },
-  { id: "block", label: "Block" },
+  { id: "process", label: "Tasks" },
+  { id: "block", label: "Documents" },
 ];
 
 const Intel = () => {
@@ -244,8 +244,8 @@ const Intel = () => {
                   >
                     {[
                       { id: "project", label: "Project" },
-                      { id: "process", label: "Process" },
-                      { id: "block", label: "Block" },
+                      { id: "process", label: "Tasks" },
+                      { id: "block", label: "Documents" },
                     ].map((option) => (
                       <button
                         key={option.id}

@@ -935,8 +935,8 @@ const Project = () => {
 
   const dropdownItems = [
     { id: "project", label: "Project" },
-    { id: "process", label: "Process" },
-    { id: "block", label: "Block" },
+    { id: "process", label: "Tasks" },
+    { id: "block", label: "Documents" },
   ];
 
   const onDragEnd = (result: DropResult) => {

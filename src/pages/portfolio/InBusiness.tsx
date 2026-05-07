@@ -202,18 +202,19 @@ const Saas = () => {
       to: `${base}/folder${queryString}`,
       image: null as string | null,
     },
-    {
-      id: "processes",
-      label: "Process",
-      to: processesPath,
-      image: null as string | null,
-    },
-    {
+       {
       id: "block",
-      label: "Block",
+      label: "Documents",
       to: `${base}/block${queryString}`,
       image: null as string | null,
     },
+    {
+      id: "processes",
+      label: "Tasks",
+      to: processesPath,
+      image: null as string | null,
+    },
+ 
   ]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<{
@@ -244,8 +245,8 @@ const Saas = () => {
 
   const dropdownItems = [
     { id: "project", label: "Project" },
-    { id: "processes", label: "Process" },
-    { id: "block", label: "Block" },
+    { id: "processes", label: "Tasks" },
+    { id: "block", label: "Documents" },
   ];
 
   const handleModeSelect = (mode: "blank" | "template") => {

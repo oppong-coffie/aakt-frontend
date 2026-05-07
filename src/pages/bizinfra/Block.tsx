@@ -52,7 +52,7 @@ const Reach = () => {
               { label: "BizInfra", to: "/dashboard/bizinfra" },
               { label: "Skillset", to: "/dashboard/bizinfra/skillset" },
               { label: skillName, to: skillPath },
-              { label: "Block", to: blockPath },
+              { label: "Documents", to: blockPath },
             ]}
           />
         </div>

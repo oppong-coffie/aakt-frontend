@@ -94,7 +94,7 @@ const Process = () => {
               { label: "BizInfra", to: "/dashboard/bizinfra" },
               { label: "Skillset", to: "/dashboard/bizinfra/skillset" },
               { label: skillBreadcrumb, to: skillPath },
-              { label: "Process", to: processPath },
+              { label: "Tasks", to: processPath },
             ]}
           />
         </div>

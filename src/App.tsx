@@ -46,9 +46,13 @@ import ProcessPage from "./pages/portfolio/Process";
 import ProcessByBusiness from "./pages/portfolio/ProcessByBusiness";
 import Block2 from "./pages/portfolio/Block";
 
+import SettingsTemplate from "./pages/settings/Template";
+import SettingsIntegrations from "./pages/settings/Integrations";
+
 const App = () => {
   return (
     <MemoryRouter>
+      
       <Routes>
         {/* Public Routes */}
         <Route path="/register" element={<Register />} />
@@ -105,6 +109,9 @@ const App = () => {
             <Route path="saas/business/:businessId/processes" element={<ProcessByBusiness />} />
             <Route path="saas/block" element={<Block2 />} />
           </Route>
+
+          <Route path="settings/template" element={<SettingsTemplate />} />
+          <Route path="settings/integrations" element={<SettingsIntegrations />} />
 
           <Route path="finish" element={<Finish />} />
         </Route>

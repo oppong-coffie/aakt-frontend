@@ -94,8 +94,8 @@ const SearchModal = ({
   const categories = [
     "All",
     "People",
-    "Blocks",
-    "Processes",
+    "Documents",
+    "Tasks",
     "Projects",
     "Operations",
     "Departments",
@@ -127,7 +127,7 @@ const SearchModal = ({
                   type="text"
                   autoFocus
                   className="flex-1 bg-transparent border-none outline-none text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-lg font-['Inter']"
-                  placeholder="Search skills, projects, processes, projects, blocks, operations"
+                  placeholder="Search skills, projects, tasks, projects, documents, operations"
                 />
               </div>
 
@@ -185,8 +185,8 @@ const LeftArrow = () => (
 
 // Categories are now managed in state
 const defaultCategories = [
-  { id: "process", label: "Process", image: null as string | null },
-  { id: "block", label: "Block", image: null as string | null },
+  { id: "process", label: "Tasks", image: null as string | null },
+  { id: "block", label: "Documents", image: null as string | null },
 ];
 
 const phaseLabels: Record<string, string> = {
@@ -305,8 +305,8 @@ const Phase = () => {
 
   const dropdownItems = [
     { id: "project", label: "Project" },
-    { id: "process", label: "Process" },
-    { id: "block", label: "Block" },
+    { id: "process", label: "Tasks" },
+    { id: "block", label: "Documents" },
   ];
 
   const handleModeSelect = (mode: "blank" | "template") => {

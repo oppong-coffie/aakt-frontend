@@ -59,8 +59,8 @@ const SearchModal = ({
   const categories = [
     "All",
     "People",
-    "Blocks",
-    "Processes",
+    "Documents",
+    "Tasks",
     "Projects",
     "Operations",
     "Departments",

@@ -115,8 +115,8 @@ const SearchModal = ({
   const categories = [
     "All",
     "People",
-    "Blocks",
-    "Processes",
+    "Documents",
+    "Tasks",
     "Projects",
     "Operations",
     "Departments",
@@ -206,9 +206,9 @@ const SearchModal = ({
 };
 
 const addOptions = [
-  { id: "process", label: "Process" },
+  { id: "process", label: "Tasks" },
   { id: "project", label: "Project" },
-  { id: "block", label: "Block" },
+  { id: "block", label: "Documents" },
 ];
 
 /**

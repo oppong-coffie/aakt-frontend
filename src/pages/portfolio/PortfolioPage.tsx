@@ -86,8 +86,8 @@ const PortfolioPage = () => {
     { label: "Add Department" },
     { label: "Add Operation" },
     { label: "Project" },
-    { label: "Process" },
-    { label: "Block" },
+    { label: "Tasks" },
+    { label: "Documents" },
   ];
 
   const [cards, setCards] = useState<{ id: string; title: string; order: number }[]>([]);
@@ -134,8 +134,8 @@ const PortfolioPage = () => {
       let itemType = 'department';
       if (label.includes('Operation')) itemType = 'operation';
       else if (label.includes('Project')) itemType = 'project';
-      else if (label.includes('Process')) itemType = 'process';
-      else if (label.includes('Block')) itemType = 'block';
+      else if (label.includes('Tasks')) itemType = 'process';
+      else if (label.includes('Documents')) itemType = 'block';
 
       const newItem = await portfolioService.createItem(cat, {
         itemType: itemType as any,

@@ -91,8 +91,8 @@ const SearchModal = ({
   const categories = [
     "All",
     "People",
-    "Blocks",
-    "Processes",
+    "Documents",
+    "Tasks",
     "Projects",
     "Operations",
     "Departments",
@@ -124,7 +124,7 @@ const SearchModal = ({
                   type="text"
                   autoFocus
                   className="flex-1 bg-transparent border-none outline-none text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-lg font-['Inter']"
-                  placeholder="Search skills, projects, processes, projects, blocks, operations"
+                  placeholder="Search skills, projects, tasks, projects, documents, operations"
                 />
               </div>
 
@@ -286,13 +286,13 @@ export default function PhasePage() {
   const [cards, setCards] = useState([
     {
       id: "process",
-      label: "Process",
+      label: "Tasks",
       to: `${base}/process`,
       image: null as string | null,
     },
     {
       id: "block",
-      label: "Block",
+      label: "Documents",
       to: `${base}/block`,
       image: null as string | null,
     },
@@ -306,8 +306,8 @@ export default function PhasePage() {
 
   const dropdownItems = [
     { id: "project", label: "Project" },
-    { id: "process", label: "Process" },
-    { id: "block", label: "Block" },
+    { id: "process", label: "Tasks" },
+    { id: "block", label: "Documents" },
   ];
 
   const onDragEnd = (result: DropResult) => {

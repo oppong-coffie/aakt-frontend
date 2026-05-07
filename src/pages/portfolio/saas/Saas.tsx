@@ -183,13 +183,13 @@ const Saas = () => {
     },
     {
       id: "process",
-      label: "Process",
+      label: "Tasks",
       to: `${base}/process`,
       image: null as string | null,
     },
     {
       id: "block",
-      label: "Block",
+      label: "Documents",
       to: `${base}/block`,
       image: null as string | null,
     },
@@ -225,8 +225,8 @@ const Saas = () => {
     { id: "department", label: "Department" },
     { id: "operation", label: "Operation" },
     { id: "project", label: "Project" },
-    { id: "process", label: "Process" },
-    { id: "block", label: "Block" },
+    { id: "process", label: "Tasks" },
+    { id: "block", label: "Documents" },
   ];
 
   const handleModeSelect = (mode: "blank" | "template") => {

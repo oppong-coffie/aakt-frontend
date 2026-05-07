@@ -209,13 +209,13 @@ const InBusinessFolder = () => {
   const [cards, setCards] = useState([
     {
       id: "processes",
-      label: "Process",
+      label: "Tasks",
       to: processesPath,
       image: null as string | null,
     },
     {
       id: "block",
-      label: "Block",
+      label: "Documents",
       to: `${base}/block${queryString}`,
       image: null as string | null,
     },
@@ -249,8 +249,8 @@ const InBusinessFolder = () => {
 
   const dropdownItems = [
     { id: "project", label: "Project" },
-    { id: "processes", label: "Process" },
-    { id: "block", label: "Block" },
+    { id: "processes", label: "Tasks" },
+    { id: "block", label: "Documents" },
   ];
 
   const handleModeSelect = (mode: "blank" | "template") => {

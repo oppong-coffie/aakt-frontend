@@ -160,8 +160,8 @@ const Process = () => {
 
   const dropdownItems = [
     { id: "project", label: "Project" },
-    { id: "process", label: "Process" },
-    { id: "block", label: "Block" },
+    { id: "process", label: "Tasks" },
+    { id: "block", label: "Documents" },
   ];
 
   const handleModeSelect = (mode: "blank" | "template") => {
@@ -190,7 +190,7 @@ const Process = () => {
             items={[
               { label: "Portfolio", to: "/dashboard/portfolio" },
               { label: "SaaS", to: "/dashboard/portfolio/saas" },
-              { label: "Process", to: "/dashboard/portfolio/saas/process" },
+              { label: "Tasks", to: "/dashboard/portfolio/saas/process" },
             ]}
           />
         </div>
@@ -317,7 +317,7 @@ const Process = () => {
                 ))}
                 <button
                   onClick={() => {
-                    setSelectedType({ id: "block", label: "Block" });
+                    setSelectedType({ id: "block", label: "Documents" });
                     setIsCreationModalOpen(true);
                   }}
                   className="w-10 h-10 border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-full flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-slate-100 hover:bg-blue-600 dark:hover:bg-blue-500 transition-colors shrink-0"
@@ -399,7 +399,7 @@ const Process = () => {
         isOpen={isCreationModalOpen}
         onClose={() => setIsCreationModalOpen(false)}
         onSelect={handleModeSelect}
-        categoryLabel={selectedType?.label || "Process"}
+        categoryLabel={selectedType?.label || "Tasks"}
       />
     </div>
   );

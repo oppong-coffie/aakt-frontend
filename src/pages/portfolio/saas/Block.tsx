@@ -52,8 +52,8 @@ const SearchModal = ({
   const categories = [
     "All",
     "People",
-    "Blocks",
-    "Processes",
+    "Documents",
+    "Tasks",
     "Projects",
     "Operations",
     "Departments",
@@ -85,7 +85,7 @@ const SearchModal = ({
                   type="text"
                   autoFocus
                   className="flex-1 bg-transparent border-none outline-none text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-lg font-['Inter']"
-                  placeholder="Search skills, projects, processes, projects, blocks, operations"
+                  placeholder="Search skills, projects, tasks, projects, documents, operations"
                 />
               </div>
 
@@ -240,8 +240,8 @@ const Block = () => {
 
   // Since Block.tsx uses static lists or data for blocks/people,
   // we might need a state to manage them if we want to edit them.
-  // For now, I'll add a state for "Blocks" as an example of editable items,
-  // or if the user wants to edit the "Blocks" sidebar items.
+  // For now, I'll add a state for "Documents" as an example of editable items,
+  // or if the user wants to edit the "Documents" sidebar items.
   // However, the request implies editing the "Cards" usually.
   // But Block.tsx has a sidebar of blocks and people.
   // The user said "edit icon should be able to change the image and the name".
@@ -249,7 +249,7 @@ const Block = () => {
   // It has a sidebar and a main content area.
   // Wait, let's look at Block.tsx content again.
   // It has `Blocks` sidebar and `People` sidebar.
-  // And a `Main Content Area` that says "Block" and "Team content goes here...".
+  // And a `Main Content Area` that says "Documents" and "Team content goes here...".
   // It DOES NOT have a grid of cards like the others.
   // BUT the existing code I read in step 274 SHOWS:
   // `const [activeTab, setActiveTab] = useState("Home");`
@@ -306,7 +306,7 @@ const Block = () => {
   // `        {/* Main Content Area */}`
   // `        <div className="flex-1 bg-white rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden flex flex-col">`
   // `          <div className="p-8">`
-  // `            <h1 ...>Block</h1>`
+  // `            <h1 ...>Documents</h1>`
   // It doesn't show a grid of cards.
   // So I will NOT add `EditItemModal` handling to `Block.tsx` right now, as there's nothing to edit.
   // I will just remove the unused icons to fix lints if I want, or leave them.
@@ -320,8 +320,8 @@ const Block = () => {
 
   const dropdownItems = [
     { id: "project", label: "Project" },
-    { id: "process", label: "Process" },
-    { id: "block", label: "Block" },
+    { id: "process", label: "Tasks" },
+    { id: "block", label: "Documents" },
   ];
 
   const handleModeSelect = (mode: "blank" | "template") => {
@@ -352,7 +352,7 @@ const Block = () => {
             items={[
               { label: "Portfolio", to: "/dashboard/portfolio" },
               { label: "SaaS", to: "/dashboard/portfolio/saas" },
-              { label: "Block", to: "/dashboard/portfolio/saas/block" },
+              { label: "Documents", to: "/dashboard/portfolio/saas/block" },
             ]}
           />
         </div>
@@ -480,7 +480,7 @@ const Block = () => {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => {
-                setSelectedType({ id: "block", label: "Block" });
+                setSelectedType({ id: "block", label: "Documents" });
                 setIsCreationModalOpen(true);
               }}
               className="w-10 h-10 border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 hover:bg-white dark:hover:bg-slate-800 transition-colors shrink-0"
@@ -558,7 +558,7 @@ const Block = () => {
         isOpen={isCreationModalOpen}
         onClose={() => setIsCreationModalOpen(false)}
         onSelect={handleModeSelect}
-        categoryLabel={selectedType?.label || "Block"}
+        categoryLabel={selectedType?.label || "Documents"}
       />
     </div>
   );

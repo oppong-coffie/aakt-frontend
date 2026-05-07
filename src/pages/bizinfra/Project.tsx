@@ -92,9 +92,9 @@ const LeftArrow = () => (
 );
 
 const addOptions = [
-  { id: "process", label: "Process" },
+  { id: "process", label: "Tasks" },
   { id: "project", label: "Project" },
-  { id: "block", label: "Block" },
+  { id: "block", label: "Documents" },
 ];
 
 const LongArrow = () => (
