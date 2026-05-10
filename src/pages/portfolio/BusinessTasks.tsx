@@ -383,7 +383,6 @@ const Process = () => {
   const [selectedTask, setSelectedTask] = useState<any | null>(null);
   const [tasks, setTasks] = useState<any[]>([]);
   const selectedProcessId = selectedTask?._id;
-  const [agents, setAgents] = useState<Agent[]>([]);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [newTask, setNewTask] = useState({ name: "", agentIds: [] as string[] });
   const [docFile, setDocFile] = useState<File | null>(null);
@@ -495,20 +494,6 @@ const Process = () => {
     }
   };
 
-  const handleDeleteTask = async (taskId: string) => {
-    if (window.confirm("Are you sure you want to delete this task?")) {
-      try {
-        const portfolioId = localStorage.getItem("portfolioId") || "default";
-        if (selectedProcessId) {
-          await portfolioService.deleteTask(portfolioId, selectedProcessId, taskId);
-          setTasks(tasks.filter((t) => t.parentId !== taskId));
-        }
-      } catch (err) {
-        console.error("Failed to delete task:", err);
-      }
-    }
-  };
-
   return (
     <div className="flex flex-col h-full bg-[#f0f0eb] dark:bg-slate-950 p-4 sm:p-8 relative overflow-hidden font-['Inter'] transition-colors duration-300">
       
@@ -516,8 +501,8 @@ const Process = () => {
         isOpen={isAddTaskModalOpen}
         onClose={() => setIsAddTaskModalOpen(false)}
         businessId={resolvedBusinessId}
-        onSuccess={(newTask) => {
-          // Add the newly created task to your list if needed
+        onSuccess={() => {
+          // Refresh your list or handle the new task
         }}
       />
 

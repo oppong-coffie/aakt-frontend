@@ -327,7 +327,6 @@ const Saas = () => {
   } | null>(null);
   const base = "/dashboard/portfolio/saas";
   const queryString = businessId ? `?businessId=${businessId}` : "";
-  const processesPath = businessId ? `${base}/business/${businessId}/processes` : `${base}/processes`;
   const [cards, setCards] = useState([
     {
       id: "folder",
