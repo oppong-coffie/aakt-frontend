@@ -184,13 +184,16 @@ const Dashboard = () => {
       {/* Sidebar */}
       <aside
         className={`
-        fixed inset-y-0 left-0 w-72 bg-[#f0f0eb] dark:bg-slate-900 flex flex-col px-4 pb-8 pt-2 border-r text-black dark:text-gray-300 border-gray-200/50 dark:border-slate-800 z-70 transform transition-all duration-700 ease-in-out font-space-grotesk text-gray-600
-        lg:translate-x-0 lg:static lg:h-full lg:z-50
-        ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        flex-shrink-0 h-full bg-[#f0f0eb] dark:bg-slate-900 flex flex-col border-r text-black dark:text-gray-300 border-gray-200/50 dark:border-slate-800 z-70 transition-all duration-300 ease-in-out font-space-grotesk text-gray-600
         ${
           navCollapsed
-            ? "lg:w-20 lg:px-2 lg:pb-6 lg:pt-2 lg:opacity-100 lg:translate-x-0"
-            : "lg:w-72 lg:opacity-100"
+            ? "w-20 px-2 pb-6 pt-2 opacity-100"
+            : "w-72 px-4 pb-8 pt-2 opacity-100"
+        }
+        ${
+          isSidebarOpen
+            ? "ml-0 relative lg:static" 
+            : "-ml-72 relative lg:static lg:ml-0"
         }
       `}
       >

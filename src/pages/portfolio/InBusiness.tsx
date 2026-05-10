@@ -152,6 +152,138 @@ const CreationModeModal = ({
   );
 };
 
+const AddProjectModal = ({
+  isOpen,
+  onClose,
+  businessId,
+  onSuccess,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  businessId: string | null;
+  onSuccess: (project: any) => void;
+}) => {
+  const [projectName, setProjectName] = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(`${API_URL}/portfolio/projects`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`
+        },
+        body: JSON.stringify({
+          businessId: businessId || "default-business-id",
+          projectName,
+          projectDescription
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create project");
+      }
+
+      const resData = await response.json();
+      onSuccess(resData.data || resData);
+      setProjectName("");
+      setProjectDescription("");
+      onClose();
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="bg-white dark:bg-slate-900 w-full max-w-md rounded-4xl shadow-2xl relative z-[110] p-8 font-['Space_Grotesk'] border border-gray-100 dark:border-slate-800"
+          >
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                New Project
+              </h3>
+            </div>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                  Project Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={projectName}
+                  onChange={(e) => setProjectName(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-['Inter'] text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+                  placeholder="Enter project name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                  Project Description
+                </label>
+                <textarea
+                  required
+                  value={projectDescription}
+                  onChange={(e) => setProjectDescription(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-['Inter'] resize-none h-32 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+                  placeholder="Enter project description"
+                />
+              </div>
+
+              <div className="flex items-center gap-3 mt-4">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 py-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 font-bold transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {loading ? "Creating..." : "Create Project"}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 const Saas = () => {
   const [searchParams] = useSearchParams();
   const businessId = searchParams.get("businessId") || localStorage.getItem("currentBusinessId") || "";
@@ -188,6 +320,7 @@ const Saas = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [projects, setProjects] = useState<any[]>([]);
   const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
+  const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<{
     id: string;
     label: string;
@@ -198,20 +331,20 @@ const Saas = () => {
   const [cards, setCards] = useState([
     {
       id: "folder",
-      label: "Folder",
+      label: "Business Folder",
       to: `${base}/folder${queryString}`,
       image: null as string | null,
     },
        {
       id: "block",
-      label: "Documents",
-      to: `${base}/block${queryString}`,
+      label: "Business Documents",
+      to: `${base}/businessdocs/${businessId}`,
       image: null as string | null,
     },
     {
       id: "processes",
-      label: "Tasks",
-      to: processesPath,
+      label: "Business Tasks",
+      to: `/dashboard/portfolio/saas/businesstasks/${businessId}`,
       image: null as string | null,
     },
  
@@ -251,11 +384,9 @@ const Saas = () => {
 
   const handleModeSelect = (mode: "blank" | "template") => {
     if (selectedCategory) {
-      console.log(
-        `Creating new ${selectedCategory.label} in ${mode} mode for SaaS`,
-      );
-      // Navigate to creation flow or placeholder
-      if (selectedCategory.id === "processes") {
+      if (selectedCategory.id === "project" && mode === "blank") {
+        setIsAddProjectModalOpen(true);
+      } else if (selectedCategory.id === "processes") {
         navigate(`${base}/business/${businessId}/processes?mode=${mode}`);
       } else {
         navigate(`${base}/${selectedCategory.id}?mode=${mode}`);
@@ -455,6 +586,15 @@ const Saas = () => {
         onClose={() => setIsCreationModalOpen(false)}
         onSelect={handleModeSelect}
         categoryLabel={selectedCategory?.label || ""}
+      />
+
+      <AddProjectModal
+        isOpen={isAddProjectModalOpen}
+        onClose={() => setIsAddProjectModalOpen(false)}
+        businessId={businessId}
+        onSuccess={(newProject) => {
+          setProjects(prev => [...prev, newProject]);
+        }}
       />
 
       <EditItemModal

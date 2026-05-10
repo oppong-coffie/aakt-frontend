@@ -1,4 +1,4 @@
-import { MemoryRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import Login from "./auth/Login";
 import Register from "./auth/Register";
 import Onboard from "./auth/Onboard";
@@ -43,15 +43,17 @@ import Culture from "./pages/portfolio/questions/Culture";
 import Image from "./pages/portfolio/questions/Image";
 
 import ProcessPage from "./pages/portfolio/Process";
-import ProcessByBusiness from "./pages/portfolio/ProcessByBusiness";
+import BusinessTasks from "./pages/portfolio/BusinessTasks";
 import Block2 from "./pages/portfolio/Block";
+import BusinessDocs from "./pages/portfolio/BusinessDocs";
 
 import SettingsTemplate from "./pages/settings/Template";
 import SettingsIntegrations from "./pages/settings/Integrations";
+import SettingsIndex from "./pages/settings/Index";
 
 const App = () => {
   return (
-    <MemoryRouter>
+    <BrowserRouter>
       
       <Routes>
         {/* Public Routes */}
@@ -68,16 +70,16 @@ const App = () => {
 
         {/* Protected/Dashboard Routes */}
         <Route path="/dashboard" element={<Dashboard />}>
+          {/* Home Routes */}
           <Route path="home" element={<MainHomepage />}>
             <Route index element={<Homepage />} />
             <Route path="finish" element={<Finish />} />
           </Route>
-
+          {/* BizInfra Routes */}
           <Route path="bizinfra" element={<Main />}>
             <Route index element={<Firstpage />} />
             <Route path="skillset" element={<Skilset />} />
             <Route path="skillset/:id" element={<SkillsetDetail />} />
-
             <Route path="skillset/:id/project" element={<Project />} />
             <Route path="skillset/:id/project/:phaseId" element={<Phase />} />
             <Route path="skillset/:id/process" element={<Process />} />
@@ -87,7 +89,7 @@ const App = () => {
             <Route path="intel" element={<Intel />} />
             <Route path="reach" element={<Reach />} />
           </Route>
-
+            {/* Portfolio Routes */}
           <Route path="portfolio" element={<PortfolioMain />}>
             <Route index element={<PortfolioFirstpage />} />
             <Route path="saas" element={<Saas />} />
@@ -106,12 +108,18 @@ const App = () => {
             <Route path="saas/project/:projectId" element={<SaasProject />} />
             <Route path="saas/project/:projectId/phase/:phaseId" element={<SaasPhase />} />
             <Route path="saas/process" element={<ProcessPage />} />
-            <Route path="saas/business/:businessId/processes" element={<ProcessByBusiness />} />
             <Route path="saas/block" element={<Block2 />} />
+            <Route path="saas/businesstasks/:businessId" element={<BusinessTasks />} />
+            <Route path="saas/businessdocs/:businessId" element={<BusinessDocs />} />
+            
+            
           </Route>
-
-          <Route path="settings/template" element={<SettingsTemplate />} />
-          <Route path="settings/integrations" element={<SettingsIntegrations />} />
+          {/* Settings Routes */}
+          <Route path="settings" element={<Outlet />}>
+            <Route index element={<SettingsIndex />} />
+            <Route path="template" element={<SettingsTemplate />} />
+            <Route path="integrations" element={<SettingsIntegrations />} />
+          </Route>
 
           <Route path="finish" element={<Finish />} />
         </Route>
@@ -119,7 +127,7 @@ const App = () => {
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </MemoryRouter>
+    </BrowserRouter>
   );
 };
 

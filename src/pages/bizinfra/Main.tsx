@@ -1,39 +1,39 @@
 import { Outlet } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+// import { motion } from "framer-motion";
+// import { Link } from "react-router-dom";
 
-const navItems = [
-  {
-    id: "Skillset",
-    label: "Skillset",
-    image: "/bizinfra/skill2.png",
-    path: "/dashboard/bizinfra/skillset",
-  },
-  {
-    id: "Network",
-    label: "Network",
-    image: "/bizinfra/network.png",
-    path: "/dashboard/bizinfra/network",
-  },
-  {
-    id: "Capital",
-    label: "Capital",
-    image: "/bizinfra/capital.png",
-    path: "/dashboard/bizinfra/capital",
-  },
-  {
-    id: "Intel",
-    label: "Intel",
-    image: "/bizinfra/intel2.png",
-    path: "/dashboard/bizinfra/intel",
-  },
-  {
-    id: "Reach",
-    label: "Reach",
-    image: "/bizinfra/reach.png",
-    path: "/dashboard/bizinfra/reach",
-  },
-];
+// const navItems = [
+//   {
+//     id: "Skillset",
+//     label: "Skillset",
+//     image: "/bizinfra/skill2.png",
+//     path: "/dashboard/bizinfra/skillset",
+//   },
+//   {
+//     id: "Network",
+//     label: "Network",
+//     image: "/bizinfra/network.png",
+//     path: "/dashboard/bizinfra/network",
+//   },
+//   {
+//     id: "Capital",
+//     label: "Capital",
+//     image: "/bizinfra/capital.png",
+//     path: "/dashboard/bizinfra/capital",
+//   },
+//   {
+//     id: "Intel",
+//     label: "Intel",
+//     image: "/bizinfra/intel2.png",
+//     path: "/dashboard/bizinfra/intel",
+//   },
+//   {
+//     id: "Reach",
+//     label: "Reach",
+//     image: "/bizinfra/reach.png",
+//     path: "/dashboard/bizinfra/reach",
+//   },
+// ];
 
 /**
  * BizInfra Main Layout - A wrapper component that provides the context
@@ -46,7 +46,7 @@ const Main = () => {
         <Outlet />
       </main>
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-6 pt-4 bg-[#f0f0eb]/90 dark:bg-slate-900/90 backdrop-blur-md z-50 transition-colors duration-300">
+      {/* <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-6 pt-4 bg-[#f0f0eb]/90 dark:bg-slate-900/90 backdrop-blur-md z-50 transition-colors duration-300">
         <div className="flex items-center gap-3 sm:gap-6 no-scrollbar max-w-full px-4 text-center">
           {navItems.map((item) => {
             const isSelected = item.id === "Intel";
@@ -78,7 +78,7 @@ const Main = () => {
             );
           })}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

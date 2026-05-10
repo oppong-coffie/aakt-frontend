@@ -934,7 +934,7 @@ const Project = () => {
   };
 
   const dropdownItems = [
-    { id: "project", label: "Project" },
+    { id: "phase", label: "Phases" },
     { id: "process", label: "Tasks" },
     { id: "block", label: "Documents" },
   ];

@@ -4,12 +4,8 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import { portfolioService, type Agent } from "../../api/portfolio.service";
 import { API_URL } from "../../config/api";
-
-/**
- * ProcessByBusiness Page (Portfolio) - A detailed view for managing ALL business processes.
- * Supports creating tasks with steps (command, deliverable, feedback).
- * Includes a sidebar for quick access to Blocks and People involved in the process.
- */
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../../config/firebase";
 
 const SearchIcon = () => (
   <svg
@@ -144,37 +140,41 @@ const CreationModeModal = ({
   );
 };
 
-const AddProcessModal = ({
+const AddTaskModal = ({
   isOpen,
   onClose,
-  phaseId,
-  projectId,
   businessId,
   onSuccess,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  phaseId: string | undefined;
-  projectId: string | undefined;
   businessId: string | undefined;
-  onSuccess: (process: any) => void;
+  onSuccess: (task: any) => void;
 }) => {
-  const [processName, setProcessName] = useState("");
+  const [taskName, setTaskName] = useState("");
+  const [docName, setDocName] = useState("");
+  const [manualBusinessId, setManualBusinessId] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (businessId) {
+      setManualBusinessId(businessId);
+    }
+  }, [businessId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate missing fields!
-    const missingFields = [];
-    if (!businessId) missingFields.push("businessId (missing from URL)");
-    if (!phaseId) missingFields.push("phaseId (missing from URL)");
-    if (!projectId) missingFields.push("projectId (missing from URL)");
-    if (!processName) missingFields.push("processName");
+    const finalBusinessId = manualBusinessId || businessId;
 
-    if (missingFields.length > 0) {
-      setError(`Cannot create: Missing ${missingFields.join(", ")}`);
+    if (!finalBusinessId) {
+      setError("Cannot create: Missing Business ID");
+      return;
+    }
+    if (!taskName) {
+      setError("Cannot create: Missing Task Name");
       return;
     }
 
@@ -182,25 +182,35 @@ const AddProcessModal = ({
     setError("");
 
     try {
-      const response = await fetch(`${API_URL}/portfolio/processes`, {
+      let documents: any[] = [];
+      if (file) {
+        const fileRef = ref(storage, `tasks/${finalBusinessId}/${Date.now()}_${file.name}`);
+        const snapshot = await uploadBytes(fileRef, file);
+        const url = await getDownloadURL(snapshot.ref);
+        documents = [{
+          name: docName || file.name,
+          url: url
+        }];
+      }
+
+      const response = await fetch(`${API_URL}/businessitems/task`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`
         },
         body: JSON.stringify({
-          phaseId,
-          projectId,
-          businessId,
-          processName
+          businessId: finalBusinessId,
+          taskName,
+          documents
         })
       });
 
       if (!response.ok) {
-        let errorMessage = "Failed to create process";
+        let errorMessage = "Failed to create task";
         try {
           const errData = await response.json();
-          errorMessage = errData.message || JSON.stringify(errData);
+          errorMessage = errData.error || errData.message || JSON.stringify(errData);
         } catch (parseErr) {
           errorMessage = `HTTP Error ${response.status}: ${response.statusText}`;
         }
@@ -209,7 +219,9 @@ const AddProcessModal = ({
 
       const resData = await response.json();
       onSuccess(resData.data || resData);
-      setProcessName("");
+      setTaskName("");
+      setDocName("");
+      setFile(null);
       onClose();
     } catch (err: any) {
       setError(err.message || "Something went wrong");
@@ -237,7 +249,7 @@ const AddProcessModal = ({
           >
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                New Process
+                New Task
               </h3>
             </div>
 
@@ -250,15 +262,59 @@ const AddProcessModal = ({
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                  Process Name
+                  Business ID
                 </label>
                 <input
                   type="text"
                   required
-                  value={processName}
-                  onChange={(e) => setProcessName(e.target.value)}
+                  value={manualBusinessId}
+                  onChange={(e) => setManualBusinessId(e.target.value)}
                   className="w-full px-4 py-3 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-['Inter'] text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
-                  placeholder="Enter process name"
+                  placeholder="Enter Business ID"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                  Task Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={taskName}
+                  onChange={(e) => setTaskName(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-['Inter'] text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+                  placeholder="Enter task name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                  Document Name (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={docName}
+                  onChange={(e) => setDocName(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-['Inter'] text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+                  placeholder="e.g. Q3 Financials"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                  Attach Document (Optional)
+                </label>
+                <input
+                  type="file"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      setFile(e.target.files[0]);
+                    } else {
+                      setFile(null);
+                    }
+                  }}
+                  className="w-full px-4 py-3 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-['Inter'] text-gray-900 dark:text-gray-100"
                 />
               </div>
 
@@ -275,7 +331,7 @@ const AddProcessModal = ({
                   disabled={loading}
                   className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-colors disabled:opacity-50 cursor-pointer"
                 >
-                  {loading ? "Creating..." : "Create Process"}
+                  {loading ? "Creating..." : "Create Task"}
                 </button>
               </div>
             </form>
@@ -286,12 +342,12 @@ const AddProcessModal = ({
   );
 };
 
-const ProcessByBusiness = () => {
-  const { businessId: pathBusinessId } = useParams<{ businessId: string }>();
+const Process = () => {
+  const { businessId: routeBusinessId } = useParams<{ businessId: string }>();
   const [searchParams] = useSearchParams();
   const phaseId = searchParams.get("phaseId") || "";
   const projectId = searchParams.get("projectId") || localStorage.getItem("projectId") || "";
-  const initialBusinessId = pathBusinessId || searchParams.get("businessId") || localStorage.getItem("currentBusinessId") || "";
+  const initialBusinessId = routeBusinessId || searchParams.get("businessId") || localStorage.getItem("currentBusinessId") || "";
   const [resolvedBusinessId, setResolvedBusinessId] = useState<string>(initialBusinessId);
 
   useEffect(() => {
@@ -317,18 +373,21 @@ const ProcessByBusiness = () => {
   const [hoveredPerson, setHoveredPerson] = useState<string | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
-  const [isAddProcessModalOpen, setIsAddProcessModalOpen] = useState(false);
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<{
     id: string;
     label: string;
   } | null>(null);
 
   const [processesList, setProcessesList] = useState<any[]>([]);
-  const [selectedProcessId, setSelectedProcessId] = useState<string | null>(null);
+  const [selectedTask, setSelectedTask] = useState<any | null>(null);
   const [tasks, setTasks] = useState<any[]>([]);
+  const selectedProcessId = selectedTask?._id;
   const [agents, setAgents] = useState<Agent[]>([]);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [newTask, setNewTask] = useState({ name: "", agentIds: [] as string[] });
+  const [docFile, setDocFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const [people] = useState<Array<{ name: string; seed: string }>>([
     { name: "Felix", seed: "Felix" },
@@ -336,44 +395,31 @@ const ProcessByBusiness = () => {
     { name: "Jace", seed: "Jace" },
   ]);
 
-  // Load process data
+  // Load task data
   useEffect(() => {
-    const loadProcess = async () => {
+    const loadTasks = async () => {
+      if (!resolvedBusinessId) return;
+      
       try {
-        const portfolioId = localStorage.getItem("portfolioId") || "default";
-        
-        // Fetch agents first
-        try {
-          const data = await portfolioService.getAgents(portfolioId);
-          setAgents(data);
-        } catch (agentErr) {
-          console.warn("Failed to load agents:", agentErr);
-        }
-        
-        if (resolvedBusinessId) {
-          // Fetch ALL processes for the business
-          const res = await fetch(`${API_URL}/portfolio/processes/all/${resolvedBusinessId}`, {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token") || ""}`
-            }
-          });
-          if (res.ok) {
-            const json = await res.json();
-            const fetched = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
-            setProcessesList(fetched);
-            if (fetched.length > 0) {
-              setSelectedProcessId(fetched[0]._id);
-              setTasks(fetched[0].tasks || []);
-            }
+        const res = await fetch(`${API_URL}/businessitems/task/${resolvedBusinessId}`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`
+          }
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const fetched = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
+          setProcessesList(fetched);
+          if (fetched.length > 0) {
+            setSelectedTask(fetched[0]);
           }
         }
       } catch (err) {
-        console.error("Failed to load process:", err);
-      } finally {
+        console.error("Failed to load tasks:", err);
       }
     };
-    loadProcess();
+    loadTasks();
   }, [resolvedBusinessId]);
 
   const dropdownItems = [
@@ -384,7 +430,7 @@ const ProcessByBusiness = () => {
 
   const handleModeSelect = (mode: "blank" | "template") => {
     if (selectedType && selectedType.id === "process" && mode === "blank") {
-      setIsAddProcessModalOpen(true);
+      setIsAddTaskModalOpen(true);
     } else {
       console.log(
         `Creating new ${selectedType?.label} in ${mode} mode for Process`,
@@ -394,23 +440,31 @@ const ProcessByBusiness = () => {
     setSelectedType(null);
   };
 
-  const handleAddTask = async () => {
+  const handleAddDocument = async () => {
     try {
-      if (selectedProcessId && newTask.name) {
-        const response = await fetch(`${API_URL}/portfolio/tasks`, {
-          method: "POST",
+      if (selectedTask?._id && newTask.name && docFile) {
+        setLoading(true);
+        
+        // 1. Upload to Firebase
+        const fileRef = ref(storage, `business_docs/${selectedTask._id}/${Date.now()}_${docFile.name}`);
+        const snapshot = await uploadBytes(fileRef, docFile);
+        const url = await getDownloadURL(snapshot.ref);
+
+        // 2. Submit to backend
+        const response = await fetch(`${API_URL}/businessitems/task/${selectedTask._id}/document`, {
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token") || ""}`
           },
           body: JSON.stringify({
-            processId: selectedProcessId,
-            taskName: newTask.name,
+            name: newTask.name,
+            url: url
           })
         });
 
         if (!response.ok) {
-          let errorMessage = "Failed to create task";
+          let errorMessage = "Failed to add document";
           try {
             const errData = await response.json();
             errorMessage = errData.error || errData.message || JSON.stringify(errData);
@@ -421,21 +475,23 @@ const ProcessByBusiness = () => {
         }
 
         const resData = await response.json();
-        const createdTask = resData.data || resData;
+        const updatedTask = resData.data || resData;
         
-        setTasks([...tasks, createdTask]);
-        
+        // 3. Update local state
+        setSelectedTask(updatedTask);
         setProcessesList(prev => prev.map(p => 
-          p._id === selectedProcessId 
-            ? { ...p, tasks: [...(p.tasks || []), createdTask] }
-            : p
+          p._id === updatedTask._id ? updatedTask : p
         ));
 
         setNewTask({ name: "", agentIds: [] });
+        setDocFile(null);
         setIsTaskModalOpen(false);
       }
-    } catch (err) {
-      console.error("Failed to add task:", err);
+    } catch (err: any) {
+      console.error("Failed to add document:", err);
+      alert(err.message || "Failed to add document");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -456,18 +512,12 @@ const ProcessByBusiness = () => {
   return (
     <div className="flex flex-col h-full bg-[#f0f0eb] dark:bg-slate-950 p-4 sm:p-8 relative overflow-hidden font-['Inter'] transition-colors duration-300">
       
-      <AddProcessModal
-        isOpen={isAddProcessModalOpen}
-        onClose={() => setIsAddProcessModalOpen(false)}
-        phaseId={phaseId}
-        projectId={projectId}
+      <AddTaskModal
+        isOpen={isAddTaskModalOpen}
+        onClose={() => setIsAddTaskModalOpen(false)}
         businessId={resolvedBusinessId}
-        onSuccess={(newProc) => {
-          setProcessesList(prev => [...prev, newProc]);
-          if (!selectedProcessId) {
-            setSelectedProcessId(newProc._id);
-            setTasks(newProc.tasks || []);
-          }
+        onSuccess={(newTask) => {
+          // Add the newly created task to your list if needed
         }}
       />
 
@@ -487,6 +537,7 @@ const ProcessByBusiness = () => {
               { label: "SaaS", to: "/dashboard/portfolio/saas" },
               { label: "Projects", to: "/dashboard/portfolio/saas/project" },
               { label: projectId || "Project", to: `/dashboard/portfolio/saas/project/${projectId || ''}` },
+              { label: "Phase", to: `/dashboard/portfolio/saas/project/${projectId || ''}/phase/${phaseId || ''}` },
               { label: "Tasks", to: "#" },
             ]}
           />
@@ -577,20 +628,20 @@ const ProcessByBusiness = () => {
             <div className="w-16 flex flex-col gap-8 py-4 z-50">
               <div className="flex flex-col items-center gap-3">
                 <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter">
-                  Process
+                  Tasks
                 </span>
-                {processesList.map((proc, index) => (
+                {processesList.map((task, index) => (
                   <div
-                    key={proc._id}
+                    key={task._id || index}
                     className="relative group flex items-center"
                     onMouseEnter={() => setHoveredBlock(index)}
                     onMouseLeave={() => setHoveredBlock(null)}
                     onClick={() => {
-                      setSelectedProcessId(proc._id);
-                      setTasks(proc.tasks || []);
+                      setSelectedTask(task);
+                      setTasks(task.tasks || []);
                     }}
                   >
-                    <div className={`w-10 h-10 ${selectedProcessId === proc._id ? "bg-blue-600 dark:bg-blue-500" : "bg-gray-300 dark:bg-slate-800"} rounded-lg shrink-0 cursor-pointer hover:bg-blue-500 dark:hover:bg-blue-400 transition-colors flex items-center justify-center text-white font-bold text-xs`}>
+                    <div className={`w-10 h-10 ${selectedTask?.taskName === task.taskName ? "bg-blue-600 dark:bg-blue-500" : "bg-gray-300 dark:bg-slate-800"} rounded-lg shrink-0 cursor-pointer hover:bg-blue-500 dark:hover:bg-blue-400 transition-colors flex items-center justify-center text-white font-bold text-xs`}>
                       {index + 1}
                     </div>
 
@@ -605,8 +656,13 @@ const ProcessByBusiness = () => {
                         >
                           <div className="w-40 h-10 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-100 dark:border-slate-700 flex items-center justify-center relative translate-x-1">
                             <div className="w-4 h-4 bg-white dark:bg-slate-800 rotate-45 absolute -left-1.5 border-l border-b border-gray-100 dark:border-slate-700"></div>
-                            <div className="w-32 h-6 bg-gray-300 dark:bg-slate-700 rounded-md flex items-center justify-center text-[10px] font-bold text-gray-700 dark:text-gray-300">{proc.processName}</div>
+                            <div className="w-32 h-6 bg-gray-300 dark:bg-slate-700 rounded-md flex items-center justify-center text-[10px] font-bold text-gray-700 dark:text-gray-300">{task.taskName}</div>
                           </div>
+                          {/* <div className="bg-white dark:bg-slate-800 px-3 py-2.5 rounded-xl shadow-lg border border-gray-100 dark:border-slate-700 ml-1.5 whitespace-nowrap max-w-xs">
+                            <span className="text-xs font-bold text-gray-700 dark:text-gray-200">
+                              {proc.processName || `Stage ${index + 1}`}
+                            </span>
+                          </div> */}
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -623,7 +679,7 @@ const ProcessByBusiness = () => {
                 </button>
               </div>
 
-              {/* People Section */}
+              {/* People Section - Displays avatars of team members linked to this process. */}
               <div className="flex flex-col items-center gap-3 mt-auto">
                 <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter">
                   People
@@ -666,6 +722,9 @@ const ProcessByBusiness = () => {
                     </AnimatePresence>
                   </div>
                 ))}
+                <button className="text-[9px] font-bold text-blue-600 hover:underline whitespace-nowrap">
+                  View More
+                </button>
               </div>
             </div>
 
@@ -673,7 +732,7 @@ const ProcessByBusiness = () => {
             <div className="flex-1 bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm relative overflow-hidden flex flex-col">
               <div className="p-8 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
                 <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight">
-                  Tasks
+                  {selectedTask?.taskName || "Task Details"}
                 </h1>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -681,56 +740,52 @@ const ProcessByBusiness = () => {
                   onClick={() => setIsTaskModalOpen(true)}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
                 >
-                  <PlusIcon /> Add Task
+                  <PlusIcon /> Add Business Document
                 </motion.button>
               </div>
 
               {/* Tasks List */}
               <div className="flex-1 overflow-y-auto p-8 space-y-4">
-                {tasks.length === 0 ? (
+                {!selectedTask || !selectedTask.documents || selectedTask.documents.length === 0 ? (
                   <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                    <p>No tasks yet. Create one to get started.</p>
+                    <p>No documents found for this task.</p>
                   </div>
                 ) : (
-                  tasks.map((task, idx) => (
+                  selectedTask.documents.map((doc: any, idx: number) => (
                     <motion.div
-                      key={task._id || task.id || idx}
+                      key={idx}
                       whileHover={{ scale: 1.02 }}
-                      className="p-4 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700"
+                      className="p-4 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 flex items-center justify-between"
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 dark:text-white">{task.taskName || task.name}</h3>
-                         
-                          {task.agentIds && task.agentIds.length > 0 && (
-                            <div className="flex gap-2 mt-2">
-                              {task.agentIds.map((agentId: string) => {
-                                const agent = agents.find((a) => a.id === agentId);
-                                return agent ? (
-                                  <span
-                                    key={agentId}
-                                    className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs"
-                                  >
-                                    {agent.name}
-                                  </span>
-                                ) : null;
-                              })}
-                            </div>
-                          )}
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                          </svg>
                         </div>
-                        <button
-                          onClick={() => handleDeleteTask(task.parentId)}
-                          className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                        >
-                          ✕
-                        </button>
+                        <div>
+                          <h3 className="font-semibold text-gray-900 dark:text-white">{doc.name}</h3>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Document</p>
+                        </div>
                       </div>
+                      <a 
+                        href={doc.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                      >
+                        View File
+                      </a>
                     </motion.div>
                   ))
                 )}
               </div>
 
-              {/* Add Task Modal */}
+              {/* Add Business Documents Modal */}
               <AnimatePresence>
                 {isTaskModalOpen && (
                   <div className="fixed inset-0 z-110 flex items-center justify-center p-6">
@@ -749,24 +804,24 @@ const ProcessByBusiness = () => {
                     >
                       <div className="px-8 pb-4 flex items-center justify-between">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                          Add Task
+                          Add Documents
                         </h2>
                         <button
                           onClick={() => setIsTaskModalOpen(false)}
                           className="w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700 transition flex items-center justify-center"
                         >
-                          ✕
+                          âœ•
                         </button>
                       </div>
 
                       <div className="px-8 py-4 space-y-4 overflow-y-auto max-h-[70vh]">
                         <div>
                           <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            Task Name
+                            Document Name
                           </label>
                           <input
                             type="text"
-                            placeholder="Enter task name"
+                            placeholder="Enter document name"
                             value={newTask.name}
                             onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
                             className="w-full px-4 py-3 mt-1 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
@@ -775,40 +830,42 @@ const ProcessByBusiness = () => {
 
                         <div>
                           <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            Assign Agents
+                            Upload Document
                           </label>
-                          <div className="mt-2 space-y-2">
-                            {agents.map((agent) => (
-                              <label key={agent.id} className="flex items-center gap-3 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={newTask.agentIds.includes(agent.id)}
-                                  onChange={(e) => {
-                                    if (e.target.checked) {
-                                      setNewTask({ ...newTask, agentIds: [...newTask.agentIds, agent.id] });
-                                    } else {
-                                      setNewTask({
-                                        ...newTask,
-                                        agentIds: newTask.agentIds.filter((id) => id !== agent.id),
-                                      });
-                                    }
-                                  }}
-                                  className="w-4 h-4 rounded"
-                                />
-                                <span className="text-sm text-gray-700 dark:text-gray-300">{agent.name}</span>
-                              </label>
-                            ))}
+                          <div className="mt-2">
+                            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-2xl hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group">
+                              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                <svg className="w-8 h-8 mb-3 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
+                                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                  <span className="font-semibold">Click to upload</span> or drag and drop
+                                </p>
+                                <p className="text-xs text-gray-400">
+                                  {docFile ? docFile.name : "PDF, PNG, JPG or DOCX"}
+                                </p>
+                              </div>
+                              <input
+                                type="file"
+                                className="hidden"
+                                onChange={(e) => {
+                                  if (e.target.files && e.target.files.length > 0) {
+                                    setDocFile(e.target.files[0]);
+                                  }
+                                }}
+                              />
+                            </label>
                           </div>
                         </div>
                       </div>
 
                       <div className="px-8 py-6 bg-gray-50 dark:bg-slate-800/30 flex gap-3">
                         <button
-                          onClick={handleAddTask}
-                          disabled={!newTask.name.trim()}
+                          onClick={handleAddDocument}
+                          disabled={loading || !newTask.name.trim() || !docFile}
                           className="flex-1 py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                         >
-                          Add Task
+                          {loading ? "Uploading..." : "Add Document"}
                         </button>
                         <button
                           onClick={() => setIsTaskModalOpen(false)}
@@ -824,6 +881,11 @@ const ProcessByBusiness = () => {
             </div>
           </>
         )}
+        {activeTab === "Team" && (
+          <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400 text-sm">
+            No team members found
+          </div>
+        )}
       </div>
 
       <CreationModeModal
@@ -836,4 +898,4 @@ const ProcessByBusiness = () => {
   );
 };
 
-export default ProcessByBusiness;
+export default Process;

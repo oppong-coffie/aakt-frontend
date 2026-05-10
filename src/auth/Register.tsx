@@ -181,7 +181,7 @@ const Register = () => {
             <div className="flex-1 h-px bg-gray-200"></div>
           </div>
 
-          <button
+          {/* <button
             type="button"
             onClick={() => {
               window.location.href = `${API_URL}/auth/google-register`;
@@ -193,7 +193,7 @@ const Register = () => {
               <GoogleIcon />{" "}
             </div>
             <h1> Continue with Google</h1>
-          </button>
+          </button> */}
 
           <button
             type="submit"
