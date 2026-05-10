@@ -2,7 +2,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import Breadcrumbs from "../../components/Breadcrumbs";
-import { portfolioService, type Agent } from "../../api/portfolio.service";
 import { API_URL } from "../../config/api";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../../config/firebase";
@@ -381,8 +380,6 @@ const Process = () => {
 
   const [processesList, setProcessesList] = useState<any[]>([]);
   const [selectedTask, setSelectedTask] = useState<any | null>(null);
-  const [tasks, setTasks] = useState<any[]>([]);
-  const selectedProcessId = selectedTask?._id;
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [newTask, setNewTask] = useState({ name: "", agentIds: [] as string[] });
   const [docFile, setDocFile] = useState<File | null>(null);
@@ -623,7 +620,6 @@ const Process = () => {
                     onMouseLeave={() => setHoveredBlock(null)}
                     onClick={() => {
                       setSelectedTask(task);
-                      setTasks(task.tasks || []);
                     }}
                   >
                     <div className={`w-10 h-10 ${selectedTask?.taskName === task.taskName ? "bg-blue-600 dark:bg-blue-500" : "bg-gray-300 dark:bg-slate-800"} rounded-lg shrink-0 cursor-pointer hover:bg-blue-500 dark:hover:bg-blue-400 transition-colors flex items-center justify-center text-white font-bold text-xs`}>
