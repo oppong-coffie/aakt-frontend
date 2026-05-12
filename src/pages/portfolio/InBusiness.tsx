@@ -2,6 +2,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { API_URL } from "../../config/api";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../../config/firebase";
 import PageLayout from "../../components/PageLayout";
 import PageHeader from "../../components/PageHeader";
 import EditItemModal from "../../components/EditItemModal";
@@ -284,9 +286,355 @@ const AddProjectModal = ({
   );
 };
 
+const AddTaskModal = ({
+  isOpen,
+  onClose,
+  businessId,
+  onSuccess,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  businessId: string | undefined;
+  onSuccess: (task: any) => void;
+}) => {
+  const [taskName, setTaskName] = useState("");
+  const [docName, setDocName] = useState("");
+  const [manualBusinessId, setManualBusinessId] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (businessId) {
+      setManualBusinessId(businessId);
+    }
+  }, [businessId]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const finalBusinessId = manualBusinessId || businessId;
+
+    if (!finalBusinessId) {
+      setError("Cannot create: Missing Business ID");
+      return;
+    }
+    if (!taskName) {
+      setError("Cannot create: Missing Task Name");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      let documents: any[] = [];
+      if (file) {
+        const fileRef = ref(storage, `tasks/${finalBusinessId}/${Date.now()}_${file.name}`);
+        const snapshot = await uploadBytes(fileRef, file);
+        const url = await getDownloadURL(snapshot.ref);
+        documents = [{
+          name: docName || file.name,
+          url: url
+        }];
+      }
+
+      const response = await fetch(`${API_URL}/businessitems/task`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`
+        },
+        body: JSON.stringify({
+          businessId: finalBusinessId,
+          taskName,
+          documents
+        })
+      });
+
+      if (!response.ok) {
+        let errorMessage = "Failed to create task";
+        try {
+          const errData = await response.json();
+          errorMessage = errData.error || errData.message || JSON.stringify(errData);
+        } catch (parseErr) {
+          errorMessage = `HTTP Error ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const resData = await response.json();
+      onSuccess(resData.data || resData);
+      setTaskName("");
+      setDocName("");
+      setFile(null);
+      onClose();
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="bg-white dark:bg-slate-900 w-full max-w-md rounded-4xl shadow-2xl relative z-[110] p-8 font-['Space_Grotesk'] border border-gray-100 dark:border-slate-800"
+          >
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                New Task
+              </h3>
+            </div>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                  Business ID
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={manualBusinessId}
+                  onChange={(e) => setManualBusinessId(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-['Inter'] text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+                  placeholder="Enter Business ID"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                  Task Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={taskName}
+                  onChange={(e) => setTaskName(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-['Inter'] text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+                  placeholder="Enter task name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                  Document Name (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={docName}
+                  onChange={(e) => setDocName(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-['Inter'] text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+                  placeholder="e.g. Q3 Financials"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                  Attach Document (Optional)
+                </label>
+                <input
+                  type="file"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      setFile(e.target.files[0]);
+                    } else {
+                      setFile(null);
+                    }
+                  }}
+                  className="w-full px-4 py-3 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-['Inter'] text-gray-900 dark:text-gray-100"
+                />
+              </div>
+
+              <div className="flex items-center gap-3 mt-4">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 py-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 font-bold transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {loading ? "Creating..." : "Create Task"}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+const AddBusinessDocumentModal = ({
+  isOpen,
+  onClose,
+  businessId,
+  onSuccess,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  businessId: string;
+  onSuccess: (doc: any) => void;
+}) => {
+  const [name, setName] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async () => {
+    if (!name || !file || !businessId) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      // 1. Upload to Firebase
+      const fileRef = ref(storage, `business_documents/${businessId}/${Date.now()}_${file.name}`);
+      const snapshot = await uploadBytes(fileRef, file);
+      const url = await getDownloadURL(snapshot.ref);
+
+      // 2. Submit to backend
+      const response = await fetch(`${API_URL}/businessdocuments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        },
+        body: JSON.stringify({
+          businessId,
+          name,
+          url,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit document");
+      }
+      
+      const resData = await response.json();
+      onSuccess(resData.data || resData);
+      onClose();
+      setName("");
+      setFile(null);
+    } catch (err: any) {
+      setError(err.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="bg-white dark:bg-slate-900 w-full max-w-md rounded-4xl shadow-2xl relative z-[110] p-8 font-['Space_Grotesk'] border border-gray-100 dark:border-slate-800"
+          >
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                Add Document
+              </h3>
+            </div>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium">
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
+                  Document Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Q3 Tax Returns"
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-800 border-none focus:ring-2 focus:ring-blue-500 font-['Inter']"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
+                  File
+                </label>
+                <div className="relative group">
+                  <input
+                    type="file"
+                    onChange={(e) => setFile(e.target.files?.[0] || null)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                  <div className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-800 border-2 border-dashed border-gray-200 dark:border-slate-700 flex items-center justify-center text-gray-500 group-hover:border-blue-500 transition-colors">
+                    {file ? file.name : "Select a file"}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 mt-4">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 py-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 font-bold transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={loading || !name || !file}
+                  className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? "Uploading..." : "Add Document"}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 const Saas = () => {
   const [searchParams] = useSearchParams();
   const businessId = searchParams.get("businessId") || localStorage.getItem("currentBusinessId") || "";
+
+  const [projects, setProjects] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [documents, setDocuments] = useState<any[]>([]);
 
   useEffect(() => {
     if (businessId) {
@@ -309,8 +657,44 @@ const Saas = () => {
         } finally {
         }
       };
+
+      const fetchTasks = async () => {
+        try {
+          const response = await fetch(`${API_URL}/businessitems/task/${businessId}`, {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token") || ""}`
+            }
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setTasks(Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []));
+          }
+        } catch (e) {
+          console.error("Failed to fetch tasks:", e);
+        }
+      };
+
+      const fetchDocuments = async () => {
+        try {
+          const response = await fetch(`${API_URL}/businessdocuments/${businessId}`, {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token") || ""}`
+            }
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setDocuments(Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []));
+          }
+        } catch (e) {
+          console.error("Failed to fetch documents:", e);
+        }
+      };
       
       fetchProjects();
+      fetchTasks();
+      fetchDocuments();
     }
   }, [businessId]);
 
@@ -318,9 +702,10 @@ const Saas = () => {
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [projects, setProjects] = useState<any[]>([]);
   const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
   const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false);
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+  const [isAddDocModalOpen, setIsAddDocModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<{
     id: string;
     label: string;
@@ -334,18 +719,18 @@ const Saas = () => {
       to: `${base}/folder${queryString}`,
       image: null as string | null,
     },
-       {
-      id: "block",
-      label: "Business Documents",
-      to: `${base}/businessdocs/${businessId}`,
-      image: null as string | null,
-    },
-    {
-      id: "processes",
-      label: "Business Tasks",
-      to: `/dashboard/portfolio/saas/businesstasks/${businessId}`,
-      image: null as string | null,
-    },
+    //    {
+    //   id: "block",
+    //   label: "Business Documents",
+    //   to: `${base}/businessdocs/${businessId}`,
+    //   image: null as string | null,
+    // },
+    // {
+    //   id: "processes",
+    //   label: "Business Tasks",
+    //   to: `/dashboard/portfolio/saas/businesstasks/${businessId}`,
+    //   image: null as string | null,
+    // },
  
   ]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -385,6 +770,10 @@ const Saas = () => {
     if (selectedCategory) {
       if (selectedCategory.id === "project" && mode === "blank") {
         setIsAddProjectModalOpen(true);
+      } else if (selectedCategory.id === "processes" && mode === "blank") {
+        setIsAddTaskModalOpen(true);
+      } else if (selectedCategory.id === "block" && mode === "blank") {
+        setIsAddDocModalOpen(true);
       } else if (selectedCategory.id === "processes") {
         navigate(`${base}/business/${businessId}/processes?mode=${mode}`);
       } else {
@@ -475,7 +864,7 @@ const Saas = () => {
             <DragDropContext onDragEnd={onDragEnd}>
               <Droppable droppableId="saas-cards" direction="horizontal">
                 {(provided) => {
-                  // Combine static cards and fetched projects
+                  // Combine static cards and fetched projects and tasks
                   const projectCards = projects.map((project) => ({
                     id: project._id,
                     label: project.projectName || "Unnamed Project",
@@ -483,8 +872,24 @@ const Saas = () => {
                     image: null,
                     isProject: true,
                   }));
+
+                  const taskCards = tasks.map((task) => ({
+                    id: task._id,
+                    label: task.taskName || "Unnamed Task",
+                    to: `${base}/showbusinesstask/${task._id}${queryString}`,
+                    image: null,
+                    isTask: true,
+                  }));
+
+                  const documentCards = documents.map((doc) => ({
+                    id: doc._id,
+                    label: doc.name || "Unnamed Document",
+                    to: `${base}/showbusinessdoc/${doc._id}${queryString}`,
+                    image: null,
+                    isDocument: true,
+                  }));
                   
-                  const displayItems = [...cards, ...projectCards];
+                  const displayItems = [...cards, ...projectCards, ...taskCards, ...documentCards];
 
                   return (
                     <div
@@ -522,7 +927,36 @@ const Saas = () => {
                                       className="w-full h-full object-cover"
                                     />
                                   ) : (
-                                    <div className="absolute inset-0 bg-linear-to-br from-blue-50/20 dark:from-blue-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    <>
+                                      <div className="absolute inset-0 bg-linear-to-br from-blue-50/20 dark:from-blue-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                      <div className="absolute inset-0 flex items-center justify-center opacity-60 group-hover:opacity-100 transition-opacity">
+                                        {(item as any).isProject ? (
+                                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500 group-hover:scale-110 transition-transform duration-300">
+                                            <rect x="3" y="3" width="7" height="7"></rect>
+                                            <rect x="14" y="3" width="7" height="7"></rect>
+                                            <rect x="14" y="14" width="7" height="7"></rect>
+                                            <rect x="3" y="14" width="7" height="7"></rect>
+                                          </svg>
+                                        ) : (item as any).isTask ? (
+                                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-green-500 group-hover:scale-110 transition-transform duration-300">
+                                            <path d="M9 11l3 3L22 4"></path>
+                                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                                          </svg>
+                                        ) : (item as any).isDocument ? (
+                                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-purple-500 group-hover:scale-110 transition-transform duration-300">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                            <polyline points="14 2 14 8 20 8"></polyline>
+                                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                                            <polyline points="10 9 9 9 8 9"></polyline>
+                                          </svg>
+                                        ) : (
+                                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 group-hover:scale-110 transition-transform duration-300">
+                                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                          </svg>
+                                        )}
+                                      </div>
+                                    </>
                                   )}
                                 </div>
                                 <span className="text-sm font-black font-['Space_Grotesk'] text-gray-900 dark:text-gray-100 tracking-tight uppercase group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
@@ -533,6 +967,16 @@ const Saas = () => {
                                 {(item as any).isProject && (
                                    <div className="absolute top-4 left-4 px-2 py-1 bg-blue-600/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-black uppercase tracking-widest">
                                      Project
+                                   </div>
+                                )}
+                                {(item as any).isTask && (
+                                   <div className="absolute top-4 left-4 px-2 py-1 bg-green-600/10 dark:bg-green-400/10 text-green-600 dark:text-green-400 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                                     Task
+                                   </div>
+                                )}
+                                {(item as any).isDocument && (
+                                   <div className="absolute top-4 left-4 px-2 py-1 bg-purple-600/10 dark:bg-purple-400/10 text-purple-600 dark:text-purple-400 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                                     Document
                                    </div>
                                 )}
 
@@ -593,6 +1037,29 @@ const Saas = () => {
         businessId={businessId}
         onSuccess={(newProject) => {
           setProjects(prev => [...prev, newProject]);
+        }}
+      />
+
+      <AddTaskModal
+        isOpen={isAddTaskModalOpen}
+        onClose={() => setIsAddTaskModalOpen(false)}
+        businessId={businessId}
+        onSuccess={(newTask) => {
+          setTasks(prev => [...prev, newTask]);
+        }}
+      />
+
+      <AddBusinessDocumentModal
+        isOpen={isAddDocModalOpen}
+        onClose={() => setIsAddDocModalOpen(false)}
+        businessId={businessId}
+        onSuccess={(newDoc) => {
+          if (newDoc) {
+             setDocuments(prev => [...prev, newDoc]);
+          } else {
+             // Fallback refresh
+             window.location.reload();
+          }
         }}
       />
 

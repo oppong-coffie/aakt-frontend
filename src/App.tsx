@@ -44,6 +44,8 @@ import Image from "./pages/portfolio/questions/Image";
 
 import ProcessPage from "./pages/portfolio/Process";
 import BusinessTasks from "./pages/portfolio/BusinessTasks";
+import ShowBusinessTask from "./pages/portfolio/ShowBusinessTask";
+import ShowBusinessDoc from "./pages/portfolio/ShowBusinessDoc";
 import Block2 from "./pages/portfolio/Block";
 import BusinessDocs from "./pages/portfolio/BusinessDocs";
 
@@ -110,6 +112,8 @@ const App = () => {
             <Route path="saas/process" element={<ProcessPage />} />
             <Route path="saas/block" element={<Block2 />} />
             <Route path="saas/businesstasks/:businessId" element={<BusinessTasks />} />
+            <Route path="saas/showbusinesstask/:taskId" element={<ShowBusinessTask />} />
+            <Route path="saas/showbusinessdoc/:docId" element={<ShowBusinessDoc />} />
             <Route path="saas/businessdocs/:businessId" element={<BusinessDocs />} />
             
             
