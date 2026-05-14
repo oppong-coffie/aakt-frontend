@@ -312,7 +312,7 @@ const AddTaskModal = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const finalBusinessId = manualBusinessId || businessId;
 
     if (!finalBusinessId) {
@@ -532,7 +532,7 @@ const AddBusinessDocumentModal = ({
       if (!response.ok) {
         throw new Error("Failed to submit document");
       }
-      
+
       const resData = await response.json();
       onSuccess(resData.data || resData);
       onClose();
@@ -628,6 +628,126 @@ const AddBusinessDocumentModal = ({
   );
 };
 
+const AddFolderModal = ({
+  isOpen,
+  onClose,
+  businessId,
+  onSuccess,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  businessId: string;
+  onSuccess: (folder: any) => void;
+}) => {
+  const [folderName, setFolderName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!folderName.trim()) {
+      setError("Folder name is required");
+      return;
+    }
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(`http://localhost:3000/folders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`
+        },
+        body: JSON.stringify({
+          businessId,
+          folderName: folderName,
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create folder");
+      }
+
+      const resData = await response.json();
+      onSuccess(resData.data || resData);
+      setFolderName("");
+      onClose();
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="bg-white dark:bg-slate-900 w-full max-w-md rounded-4xl shadow-2xl relative z-[110] p-8 font-['Space_Grotesk'] border border-gray-100 dark:border-slate-800"
+          >
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                New Folder
+              </h3>
+            </div>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                  Folder Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={folderName}
+                  onChange={(e) => setFolderName(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-['Inter'] text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+                  placeholder="Enter folder name"
+                />
+              </div>
+
+              <div className="flex items-center gap-3 mt-4">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 py-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 font-bold transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {loading ? "Creating..." : "Create Folder"}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 const Saas = () => {
   const [searchParams] = useSearchParams();
   const businessId = searchParams.get("businessId") || localStorage.getItem("currentBusinessId") || "";
@@ -635,11 +755,12 @@ const Saas = () => {
   const [projects, setProjects] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
   const [documents, setDocuments] = useState<any[]>([]);
+  const [folders, setFolders] = useState<any[]>([]);
 
   useEffect(() => {
     if (businessId) {
       localStorage.setItem("currentBusinessId", businessId);
-      
+
       const fetchProjects = async () => {
         try {
           const response = await fetch(`${API_URL}/portfolio/projects/${businessId}`, {
@@ -691,10 +812,27 @@ const Saas = () => {
           console.error("Failed to fetch documents:", e);
         }
       };
-      
+      const fetchFolders = async () => {
+        try {
+          const response = await fetch(`${API_URL}/folders`, {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token") || ""}`
+            }
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setFolders(Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []));
+          }
+        } catch (e) {
+          console.error("Failed to fetch folders:", e);
+        }
+      };
+
       fetchProjects();
       fetchTasks();
       fetchDocuments();
+      fetchFolders();
     }
   }, [businessId]);
 
@@ -706,19 +844,20 @@ const Saas = () => {
   const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false);
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [isAddDocModalOpen, setIsAddDocModalOpen] = useState(false);
+  const [isAddFolderModalOpen, setIsAddFolderModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<{
     id: string;
     label: string;
   } | null>(null);
   const base = "/dashboard/portfolio/saas";
   const queryString = businessId ? `?businessId=${businessId}` : "";
-  const [cards, setCards] = useState([
-    {
-      id: "folder",
-      label: "Business Folder",
-      to: `${base}/folder${queryString}`,
-      image: null as string | null,
-    },
+  const [cards, setCards] = useState<any[]>([
+    // {
+    //   id: "folder",
+    //   label: "Business Folder",
+    //   to: `${base}/folder${queryString}`,
+    //   image: null as string | null,
+    // },
     //    {
     //   id: "block",
     //   label: "Business Documents",
@@ -731,7 +870,7 @@ const Saas = () => {
     //   to: `/dashboard/portfolio/saas/businesstasks/${businessId}`,
     //   image: null as string | null,
     // },
- 
+
   ]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<{
@@ -752,7 +891,57 @@ const Saas = () => {
     );
   };
 
-  const onDragEnd = (result: DropResult) => {
+  const onDragEnd = async (result: DropResult) => {
+    if (result.combine) {
+      const draggedId = result.draggableId;
+      const targetId = result.combine.draggableId;
+
+      const draggedProject = projects.find(p => p._id === draggedId);
+      const draggedTask = tasks.find(t => t._id === draggedId);
+      const draggedDoc = documents.find(d => d._id === draggedId);
+      const targetFolder = folders.find(f => f._id === targetId || f.id === targetId);
+
+      if (targetFolder) {
+        let endpoint = "";
+        if (draggedProject) {
+          endpoint = `http://localhost:3000/portfolio/projects/${draggedId}/folder`;
+        } else if (draggedTask) {
+          endpoint = `http://localhost:3000/businessitems/task/${draggedId}/folder`;
+        } else if (draggedDoc) {
+          endpoint = `http://localhost:3000/businessdocuments/${draggedId}/folder`;
+        }
+
+        if (endpoint) {
+          try {
+            const response = await fetch(endpoint, {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token") || ""}`
+              },
+              body: JSON.stringify({ folderId: targetId })
+            });
+
+            if (!response.ok && response.status === 404) {
+              await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem("token") || ""}`
+                },
+                body: JSON.stringify({ folderId: targetId })
+              });
+            }
+
+            window.location.reload();
+          } catch (e) {
+            console.error("Failed to add to folder:", e);
+          }
+        }
+      }
+      return;
+    }
+
     if (!result.destination) return;
     const items = Array.from(cards);
     const [reorderedItem] = items.splice(result.source.index, 1);
@@ -761,6 +950,7 @@ const Saas = () => {
   };
 
   const dropdownItems = [
+    { id: "folder", label: "Folder" },
     { id: "project", label: "Project" },
     { id: "processes", label: "Tasks" },
     { id: "block", label: "Documents" },
@@ -770,6 +960,8 @@ const Saas = () => {
     if (selectedCategory) {
       if (selectedCategory.id === "project" && mode === "blank") {
         setIsAddProjectModalOpen(true);
+      } else if (selectedCategory.id === "folder" && mode === "blank") {
+        setIsAddFolderModalOpen(true);
       } else if (selectedCategory.id === "processes" && mode === "blank") {
         setIsAddTaskModalOpen(true);
       } else if (selectedCategory.id === "block" && mode === "blank") {
@@ -842,8 +1034,8 @@ const Saas = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className={`relative px-2 py-1 text-sm font-medium transition-colors ${activeTab === tab
-                ? "text-gray-900 dark:text-gray-100"
-                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              ? "text-gray-900 dark:text-gray-100"
+              : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
               }`}
           >
             {tab}
@@ -862,10 +1054,12 @@ const Saas = () => {
         {activeTab === "Home" && (
           <div className="max-w-7xl w-full px-4">
             <DragDropContext onDragEnd={onDragEnd}>
-              <Droppable droppableId="saas-cards" direction="horizontal">
+              <Droppable droppableId="saas-cards" direction="horizontal" isCombineEnabled={true}>
                 {(provided) => {
                   // Combine static cards and fetched projects and tasks
-                  const projectCards = projects.map((project) => ({
+                  const projectCards = projects
+                    .filter((project) => !project.folderId)
+                    .map((project) => ({
                     id: project._id,
                     label: project.projectName || "Unnamed Project",
                     to: `${base}/project/${project._id}${queryString}`,
@@ -873,7 +1067,9 @@ const Saas = () => {
                     isProject: true,
                   }));
 
-                  const taskCards = tasks.map((task) => ({
+                  const taskCards = tasks
+                    .filter((task) => !task.folderId)
+                    .map((task) => ({
                     id: task._id,
                     label: task.taskName || "Unnamed Task",
                     to: `${base}/showbusinesstask/${task._id}${queryString}`,
@@ -881,15 +1077,27 @@ const Saas = () => {
                     isTask: true,
                   }));
 
-                  const documentCards = documents.map((doc) => ({
+                  const documentCards = documents
+                    .filter((doc) => !doc.folderId)
+                    .map((doc) => ({
                     id: doc._id,
                     label: doc.name || "Unnamed Document",
                     to: `${base}/showbusinessdoc/${doc._id}${queryString}`,
                     image: null,
                     isDocument: true,
                   }));
-                  
-                  const displayItems = [...cards, ...projectCards, ...taskCards, ...documentCards];
+
+                  const folderCards = folders
+                    .filter((folder) => !folder.folderId)
+                    .map((folder) => ({
+                    id: folder._id || folder.id,
+                    label: folder.folderName || folder.name || "Unnamed Folder",
+                    to: `${base}/folder/${folder._id || folder.id}${queryString}`,
+                    image: null,
+                    isFolder: true,
+                  }));
+
+                  const displayItems = [...cards, ...folderCards, ...projectCards, ...taskCards, ...documentCards];
 
                   return (
                     <div
@@ -898,7 +1106,7 @@ const Saas = () => {
                       className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full"
                     >
                       {displayItems.map((item, i) => (
-                        <Draggable key={item.id} draggableId={item.id} index={i}>
+                        <Draggable key={item.id} draggableId={item.id} index={i} isDragDisabled={(item as any).isFolder}>
                           {(provided, snapshot) => (
                             <div
                               ref={provided.innerRef}
@@ -909,14 +1117,23 @@ const Saas = () => {
                             >
                               <motion.div
                                 initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.1 }}
+                                animate={{ 
+                                  opacity: 1, 
+                                  y: 0,
+                                  scale: snapshot.combineTargetFor ? 0.9 : 1
+                                }}
+                                transition={{ 
+                                  delay: i * 0.1,
+                                  scale: { duration: 0.2, type: "spring" }
+                                }}
                                 className={`flex flex-col items-center gap-3 w-full group cursor-pointer p-6 rounded-[2.5rem] hover:bg-gray-100 dark:hover:bg-slate-900 transition-all font-bold relative ${snapshot.isDragging
-                                    ? "bg-white dark:bg-slate-800 shadow-lg"
-                                    : ""
+                                  ? "bg-white dark:bg-slate-800 shadow-lg ring-4 ring-blue-500/20"
+                                  : snapshot.combineTargetFor
+                                  ? "bg-blue-50 dark:bg-blue-900/20 shadow-inner border-2 border-blue-400 border-dashed"
+                                  : ""
                                   }`}
                                 onClick={() => navigate(item.to)}
-                                whileHover={{ scale: 1.02 }}
+                                whileHover={{ scale: snapshot.combineTargetFor ? 0.9 : 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                               >
                                 <div className="w-full aspect-16/10 bg-white dark:bg-slate-800 rounded-4xl shadow-sm border border-gray-100 dark:border-slate-700 group-hover:shadow-md transition-shadow flex items-center justify-center overflow-hidden relative">
@@ -962,22 +1179,27 @@ const Saas = () => {
                                 <span className="text-sm font-black font-['Space_Grotesk'] text-gray-900 dark:text-gray-100 tracking-tight uppercase group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                                   {item.label}
                                 </span>
-                                
+
                                 {/* Item Tag */}
                                 {(item as any).isProject && (
-                                   <div className="absolute top-4 left-4 px-2 py-1 bg-blue-600/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                                     Project
-                                   </div>
+                                  <div className="absolute top-4 left-4 px-2 py-1 bg-blue-600/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                                    Project
+                                  </div>
                                 )}
                                 {(item as any).isTask && (
-                                   <div className="absolute top-4 left-4 px-2 py-1 bg-green-600/10 dark:bg-green-400/10 text-green-600 dark:text-green-400 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                                     Task
-                                   </div>
+                                  <div className="absolute top-4 left-4 px-2 py-1 bg-green-600/10 dark:bg-green-400/10 text-green-600 dark:text-green-400 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                                    Task
+                                  </div>
                                 )}
                                 {(item as any).isDocument && (
-                                   <div className="absolute top-4 left-4 px-2 py-1 bg-purple-600/10 dark:bg-purple-400/10 text-purple-600 dark:text-purple-400 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                                     Document
-                                   </div>
+                                  <div className="absolute top-4 left-4 px-2 py-1 bg-purple-600/10 dark:bg-purple-400/10 text-purple-600 dark:text-purple-400 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                                    Document
+                                  </div>
+                                )}
+                                {(item as any).isFolder && (
+                                  <div className="absolute top-4 left-4 px-2 py-1 bg-yellow-600/10 dark:bg-yellow-400/10 text-yellow-600 dark:text-yellow-400 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                                    Folder
+                                  </div>
                                 )}
 
                                 {/* Hover Actions */}
@@ -1055,11 +1277,21 @@ const Saas = () => {
         businessId={businessId}
         onSuccess={(newDoc) => {
           if (newDoc) {
-             setDocuments(prev => [...prev, newDoc]);
+            setDocuments(prev => [...prev, newDoc]);
           } else {
-             // Fallback refresh
-             window.location.reload();
+            // Fallback refresh
+            window.location.reload();
           }
+        }}
+      />
+
+      <AddFolderModal
+        isOpen={isAddFolderModalOpen}
+        onClose={() => setIsAddFolderModalOpen(false)}
+        businessId={businessId}
+        onSuccess={() => {
+          // Optional: Add to local state if you create a folders array, otherwise reload
+          window.location.reload();
         }}
       />
 

@@ -2,14 +2,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import Breadcrumbs from "../../components/Breadcrumbs";
-import { portfolioService, type Agent } from "../../api/portfolio.service";
+import { portfolioService } from "../../api/portfolio.service";
 import { API_URL } from "../../config/api";
-
-/**
- * Process Page (Portfolio) - A detailed view for managing business processes.
- * Supports creating tasks with steps (command, deliverable, feedback).
- * Includes a sidebar for quick access to Blocks and People involved in the process.
- */
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../../config/firebase";
 
 const SearchIcon = () => (
   <svg
@@ -325,10 +321,11 @@ const Process = () => {
 
   const [processesList, setProcessesList] = useState<any[]>([]);
   const [selectedProcessId, setSelectedProcessId] = useState<string | null>(null);
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const [documents, setDocuments] = useState<any[]>([]);
+  // const [agents, setAgents] = useState<Agent[]>([]);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
-  const [newTask, setNewTask] = useState({ name: "", agentIds: [] as string[] });
+  const [newTask, setNewTask] = useState<{ name: string; agentIds: string[]; file?: File | null }>({ name: "", agentIds: [] });
+  const [documentToView, setDocumentToView] = useState<string | null>(null);
 
   const [people] = useState<Array<{ name: string; seed: string }>>([
     { name: "Felix", seed: "Felix" },
@@ -343,8 +340,8 @@ const Process = () => {
         const portfolioId = localStorage.getItem("portfolioId") || "default";
         if (phaseId) {
           try {
-            const data = await portfolioService.getAgents(portfolioId);
-            setAgents(data);
+            await portfolioService.getAgents(portfolioId);
+            // setAgents(data);
           } catch (agentErr) {
             console.warn("Failed to load agents, this is non-fatal:", agentErr);
           }
@@ -362,7 +359,7 @@ const Process = () => {
             console.log("processesList", fetched);
             if (fetched.length > 0) {
               setSelectedProcessId(fetched[0]._id);
-              setTasks(fetched[0].tasks || []);
+              setDocuments(fetched[0].documents || []);
             }
           }
         }
@@ -392,10 +389,21 @@ const Process = () => {
     setSelectedType(null);
   };
 
+  const [loading, setLoading] = useState(false);
+
   const handleAddTask = async () => {
     try {
       if (selectedProcessId && newTask.name) {
-        const response = await fetch(`${API_URL}/portfolio/tasks`, {
+        setLoading(true);
+        let fileUrl = "";
+
+        if (newTask.file) {
+          const fileRef = ref(storage, `portfolio_docs/${selectedProcessId}/${Date.now()}_${newTask.file.name}`);
+          const snapshot = await uploadBytes(fileRef, newTask.file);
+          fileUrl = await getDownloadURL(snapshot.ref);
+        }
+
+        const response = await fetch(`${API_URL}/portfolio/documents`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -403,12 +411,13 @@ const Process = () => {
           },
           body: JSON.stringify({
             processId: selectedProcessId,
-            taskName: newTask.name,
+            documentName: newTask.name,
+            url: fileUrl
           })
         });
 
         if (!response.ok) {
-          let errorMessage = "Failed to create task";
+          let errorMessage = "Failed to create document";
           try {
             const errData = await response.json();
             errorMessage = errData.error || errData.message || JSON.stringify(errData);
@@ -419,34 +428,37 @@ const Process = () => {
         }
 
         const resData = await response.json();
-        const createdTask = resData.data || resData;
+        const createdDocument = resData.data || resData;
         
-        setTasks([...tasks, createdTask]);
+        setDocuments([...documents, createdDocument]);
         
         setProcessesList(prev => prev.map(p => 
           p._id === selectedProcessId 
-            ? { ...p, tasks: [...(p.tasks || []), createdTask] }
+            ? { ...p, documents: [...(p.documents || []), createdDocument] }
             : p
         ));
 
-        setNewTask({ name: "", agentIds: [] });
+        setNewTask({ name: "", agentIds: [], file: null });
         setIsTaskModalOpen(false);
       }
     } catch (err) {
       console.error("Failed to add task:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDeleteTask = async (taskId: string) => {
-    if (window.confirm("Are you sure you want to delete this task?")) {
+  const handleDeleteDocument = async (documentId: string) => {
+    if (window.confirm("Are you sure you want to delete this document?")) {
       try {
-        const portfolioId = localStorage.getItem("portfolioId") || "default";
+        // const portfolioId = localStorage.getItem("portfolioId") || "default";
         if (selectedProcessId) {
-          await portfolioService.deleteTask(portfolioId, selectedProcessId, taskId);
-          setTasks(tasks.filter((t) => t.parentId !== taskId));
+          // Temporarily ignoring backend delete since route may not exist yet
+          // await portfolioService.deleteTask(portfolioId, selectedProcessId, documentId);
+          setDocuments(documents.filter((d) => d._id !== documentId));
         }
       } catch (err) {
-        console.error("Failed to delete task:", err);
+        console.error("Failed to delete document:", err);
       }
     }
   };
@@ -464,7 +476,7 @@ const Process = () => {
           setProcessesList(prev => [...prev, newProc]);
           if (!selectedProcessId) {
             setSelectedProcessId(newProc._id);
-            setTasks(newProc.tasks || []);
+            setDocuments(newProc.documents || []);
           }
         }}
       />
@@ -576,7 +588,7 @@ const Process = () => {
             <div className="w-16 flex flex-col gap-8 py-4 z-50">
               <div className="flex flex-col items-center gap-3">
                 <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter">
-                  Process
+                  Tasks
                 </span>
                 {processesList.map((proc, index) => (
                   <div
@@ -586,7 +598,7 @@ const Process = () => {
                     onMouseLeave={() => setHoveredBlock(null)}
                     onClick={() => {
                       setSelectedProcessId(proc._id);
-                      setTasks(proc.tasks || []);
+                      setDocuments(proc.documents || []);
                     }}
                   >
                     <div className={`w-10 h-10 ${selectedProcessId === proc._id ? "bg-blue-600 dark:bg-blue-500" : "bg-gray-300 dark:bg-slate-800"} rounded-lg shrink-0 cursor-pointer hover:bg-blue-500 dark:hover:bg-blue-400 transition-colors flex items-center justify-center text-white font-bold text-xs`}>
@@ -680,7 +692,7 @@ const Process = () => {
             <div className="flex-1 bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm relative overflow-hidden flex flex-col">
               <div className="p-8 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
                 <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight">
-                  Tasks
+                  {processesList.find(p => p._id === selectedProcessId)?.processName || "Tasks"}
                 </h1>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -688,64 +700,60 @@ const Process = () => {
                   onClick={() => setIsTaskModalOpen(true)}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
                 >
-                  <PlusIcon /> Add Task
+                  <PlusIcon /> Add document
                 </motion.button>
               </div>
 
-              {/* Tasks List */}
-              <div className="flex-1 overflow-y-auto p-8 space-y-4">
-                {tasks.length === 0 ? (
+              {/* Documents List */}
+              <div className="flex-1 overflow-y-auto p-8">
+                {documents.length === 0 ? (
                   <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                    <p>No tasks yet. Create one to get started.</p>
+                    <p>No documents yet. Create one to get started.</p>
                   </div>
                 ) : (
-                  tasks.map((task, idx) => (
-                    <motion.div
-                      key={task._id || task.id || idx}
-                      whileHover={{ scale: 1.02 }}
-                      className="p-4 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 dark:text-white">{task.taskName || task.name}</h3>
-                         
-                          {task.agentIds && task.agentIds.length > 0 && (
-                            <div className="flex gap-2 mt-2">
-                              {task.agentIds.map((agentId: string) => {
-                                const agent = agents.find((a) => a.id === agentId);
-                                return agent ? (
-                                  <span
-                                    key={agentId}
-                                    className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs"
-                                  >
-                                    {agent.name}
-                                  </span>
-                                ) : null;
-                              })}
-                            </div>
-                          )}
-                          {task.steps && task.steps.length > 0 && (
-                            <div className="mt-3 space-y-2">
-                              <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">Steps:</p>
-                              {task.steps.map((step: any, idx: number) => (
-                                <div key={idx} className="text-xs text-gray-600 dark:text-gray-400 ml-2">
-                                  {idx + 1}. {step.type === "command" && `Command: ${step.content}`}
-                                  {step.type === "deliverable" && `Deliverable (Block: ${step.blockId})`}
-                                  {step.type === "feedback" && `Feedback (Reviewer: ${step.reviewerAgentId})`}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {documents.map((doc, idx) => (
+                      <motion.div
+                        key={doc._id || doc.id || idx}
+                        whileHover={{ y: -4 }}
+                        onClick={() => {
+                          if (doc.url) setDocumentToView(doc.url);
+                        }}
+                        className="group flex flex-col bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-all h-64 relative"
+                      >
                         <button
-                          onClick={() => handleDeleteTask(task.parentId)}
-                          className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteDocument(doc._id);
+                          }}
+                          className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-full text-gray-400 hover:text-red-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
                         >
-                          âœ•
+                          ✕
                         </button>
-                      </div>
-                    </motion.div>
-                  ))
+
+                        <div className="flex-1 bg-gray-100 dark:bg-slate-900 relative overflow-hidden flex items-center justify-center pointer-events-none">
+                          {doc.url ? (
+                            <iframe 
+                              src={doc.url} 
+                              className="w-full h-full object-cover border-none" 
+                              title={doc.documentName}
+                              tabIndex={-1}
+                              scrolling="no"
+                            />
+                          ) : (
+                            <div className="text-gray-400 font-medium text-sm">No Preview</div>
+                          )}
+                          <div className="absolute inset-0 bg-transparent"></div>
+                        </div>
+                        
+                        <div className="p-4 border-t border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
+                          <h3 className="font-semibold text-gray-900 dark:text-white truncate" title={doc.documentName || doc.name || doc.taskName}>
+                            {doc.documentName || doc.name || doc.taskName}
+                          </h3>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
                 )}
               </div>
 
@@ -768,7 +776,7 @@ const Process = () => {
                     >
                       <div className="px-8 pb-4 flex items-center justify-between">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                          Add Task
+                          Add document
                         </h2>
                         <button
                           onClick={() => setIsTaskModalOpen(false)}
@@ -781,11 +789,11 @@ const Process = () => {
                       <div className="px-8 py-4 space-y-4 overflow-y-auto max-h-[70vh]">
                         <div>
                           <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            Task Name
+                            Document Name
                           </label>
                           <input
                             type="text"
-                            placeholder="Enter task name"
+                            placeholder="Enter document name"
                             value={newTask.name}
                             onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
                             className="w-full px-4 py-3 mt-1 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
@@ -794,40 +802,24 @@ const Process = () => {
 
                         <div>
                           <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            Assign Agents
+                            Upload the document
                           </label>
-                          <div className="mt-2 space-y-2">
-                            {agents.map((agent) => (
-                              <label key={agent.id} className="flex items-center gap-3 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={newTask.agentIds.includes(agent.id)}
-                                  onChange={(e) => {
-                                    if (e.target.checked) {
-                                      setNewTask({ ...newTask, agentIds: [...newTask.agentIds, agent.id] });
-                                    } else {
-                                      setNewTask({
-                                        ...newTask,
-                                        agentIds: newTask.agentIds.filter((id) => id !== agent.id),
-                                      });
-                                    }
-                                  }}
-                                  className="w-4 h-4 rounded"
-                                />
-                                <span className="text-sm text-gray-700 dark:text-gray-300">{agent.name}</span>
-                              </label>
-                            ))}
-                          </div>
+                          <input
+                            type="file"
+                            onChange={(e) => setNewTask({ ...newTask, file: e.target.files?.[0] })}
+                            className="w-full px-4 py-3 mt-1 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                          />
+                       
                         </div>
                       </div>
 
                       <div className="px-8 py-6 bg-gray-50 dark:bg-slate-800/30 flex gap-3">
                         <button
                           onClick={handleAddTask}
-                          disabled={!newTask.name.trim()}
+                          disabled={!newTask.name.trim() || loading}
                           className="flex-1 py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                         >
-                          Add Task
+                          {loading ? "Adding..." : "Add document"}
                         </button>
                         <button
                           onClick={() => setIsTaskModalOpen(false)}
@@ -856,6 +848,43 @@ const Process = () => {
         onSelect={handleModeSelect}
         categoryLabel={selectedType?.label || "Tasks"}
       />
+
+      {/* Document Viewer Modal */}
+      <AnimatePresence>
+        {documentToView && (
+          <div className="fixed inset-0 z-[200] flex flex-col">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDocumentToView(null)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative z-[201] flex flex-col h-full w-full p-4 md:p-8 max-w-7xl mx-auto"
+            >
+              <div className="flex items-center justify-end mb-4">
+                <button
+                  onClick={() => setDocumentToView(null)}
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="flex-1 w-full bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center">
+                <iframe
+                  src={documentToView}
+                  className="w-full h-full border-none"
+                  title="Document Viewer"
+                />
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
