@@ -125,24 +125,91 @@ const CursorGlow = () => {
   );
 };
 
-/* ─── Live build badge ─── */
-const LiveBadge = () => (
-  <motion.div
-    initial={{ opacity: 0, y: -10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.2, duration: 0.6 }}
-    className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-black/10 bg-white/80 backdrop-blur-xl mb-8 shadow-sm"
-  >
-    <motion.span
-      animate={{ opacity: [0.4, 1, 0.4] }}
-      transition={{ duration: 1.8, repeat: Infinity }}
-      className="w-2 h-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-400/50"
-    />
-    <span className="text-xs text-gray-500 font-medium tracking-wide">
-      Building in progress — launching soon
-    </span>
-  </motion.div>
-);
+/* ─── Notify form ─── */
+const NotifyForm = () => {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setStatus("loading");
+    setTimeout(() => {
+      setStatus("success");
+      setEmail("");
+    }, 1400);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.8, duration: 0.7 }}
+      className="mt-10 w-full max-w-md"
+    >
+      <p className="text-sm font-semibold text-gray-500 mb-3 tracking-wide">
+        Sign up to get notified when we launch
+      </p>
+
+      <AnimatePresence mode="wait">
+        {status === "success" ? (
+          <motion.div
+            key="success"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex items-center justify-center gap-2.5 px-5 py-4 rounded-2xl border border-emerald-200 bg-emerald-50"
+          >
+            <span className="text-lg">🎉</span>
+            <span className="text-emerald-700 font-medium text-sm">
+              You're on the list! We'll notify you at launch.
+            </span>
+          </motion.div>
+        ) : (
+          <motion.form
+            key="form"
+            onSubmit={handleSubmit}
+            className="flex gap-2"
+          >
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email address"
+              disabled={status === "loading"}
+              className="flex-1 px-4 py-3 rounded-xl border border-black/10 bg-white text-gray-800 placeholder-gray-400 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all duration-200 shadow-sm"
+            />
+            <motion.button
+              type="submit"
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.97 }}
+              disabled={status === "loading"}
+              className="px-5 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold shadow-md shadow-indigo-200 hover:shadow-indigo-300 transition-all duration-200 whitespace-nowrap disabled:opacity-70"
+            >
+              {status === "loading" ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                  Joining…
+                </span>
+              ) : (
+                "Notify Me"
+              )}
+            </motion.button>
+          </motion.form>
+        )}
+      </AnimatePresence>
+
+      {status !== "success" && (
+        <p className="mt-2 text-center text-xs text-gray-400">
+          No spam. Unsubscribe anytime.
+        </p>
+      )}
+    </motion.div>
+  );
+};
 
 
 /* ─── Floating particles ─── */
@@ -198,9 +265,6 @@ const CountdownPage = () => {
       {/* Main content */}
       <div className="relative z-10 flex flex-col items-center text-center w-full max-w-3xl">
 
-        {/* Live badge */}
-        <LiveBadge />
-
         {/* Logo */}
         <motion.div
           initial={{ opacity: 0, scale: 0.7 }}
@@ -246,6 +310,9 @@ const CountdownPage = () => {
             <FlipDigit key={item.label} value={item.value} label={item.label} />
           ))}
         </motion.div>
+
+        {/* Notify form */}
+        <NotifyForm />
 
       </div>
 
