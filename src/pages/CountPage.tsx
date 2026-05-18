@@ -189,7 +189,7 @@ const CountdownPage = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-[#030712] overflow-hidden flex flex-col items-center justify-center px-6 py-20">
+    <div className="relative min-h-screen bg-[#030712] overflow-hidden flex flex-col items-center justify-center px-6 py-0">
       {/* Backgrounds */}
       <GridBackground />
       <Particles />
@@ -247,15 +247,6 @@ const CountdownPage = () => {
           ))}
         </motion.div>
 
-        {/* Footer note */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.6 }}
-          className="mt-12 text-xs text-white/20 tracking-wide"
-        >
-          © {new Date().getFullYear()} AAKT · All rights reserved
-        </motion.p>
       </div>
 
       {/* Giant watermark */}
