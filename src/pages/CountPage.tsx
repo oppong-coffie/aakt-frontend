@@ -145,7 +145,7 @@ const NotifyForm = () => {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.8, duration: 0.7 }}
-      className="mt-10 w-full max-w-md"
+      className="mt-5 w-full max-w-md"
     >
       <p className="text-sm font-semibold text-gray-500 mb-3 tracking-wide">
         Sign up to get notified when we launch
@@ -169,7 +169,7 @@ const NotifyForm = () => {
           <motion.form
             key="form"
             onSubmit={handleSubmit}
-            className="flex gap-2"
+            className="flex gap-2 mt-4"
           >
             <input
               type="email"
