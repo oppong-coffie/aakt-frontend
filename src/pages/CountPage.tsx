@@ -42,13 +42,13 @@ const FlipDigit = ({ value, label }: { value: string; label: string }) => {
       {/* Card */}
       <div className="relative w-28 h-28 sm:w-36 sm:h-36">
         {/* Glow ring */}
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/30 to-purple-600/20 blur-xl" />
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-400/20 to-indigo-400/10 blur-xl" />
         {/* Glass card */}
-        <div className="relative w-full h-full rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-xl flex flex-col items-center justify-center overflow-hidden shadow-2xl">
+        <div className="relative w-full h-full rounded-2xl border border-black/[0.08] bg-white/80 backdrop-blur-xl flex flex-col items-center justify-center overflow-hidden shadow-lg shadow-black/[0.08]">
           {/* Top half highlight */}
-          <div className="absolute top-0 left-0 right-0 h-1/2 bg-white/[0.04] rounded-t-2xl" />
+          <div className="absolute top-0 left-0 right-0 h-1/2 bg-white/50 rounded-t-2xl" />
           {/* Center divider */}
-          <div className="absolute top-1/2 left-3 right-3 h-px bg-black/40" />
+          <div className="absolute top-1/2 left-3 right-3 h-px bg-black/10" />
 
           <AnimatePresence mode="popLayout">
             <motion.span
@@ -57,7 +57,7 @@ const FlipDigit = ({ value, label }: { value: string; label: string }) => {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 30, opacity: 0 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
-              className="text-5xl sm:text-6xl font-black text-white tracking-tight tabular-nums select-none"
+              className="text-5xl sm:text-6xl font-black text-gray-900 tracking-tight tabular-nums select-none"
             >
               {value}
             </motion.span>
@@ -66,7 +66,7 @@ const FlipDigit = ({ value, label }: { value: string; label: string }) => {
       </div>
 
       {/* Label */}
-      <span className="text-[11px] uppercase tracking-[0.25em] text-blue-300/70 font-semibold">
+      <span className="text-[11px] uppercase tracking-[0.25em] text-indigo-500/80 font-semibold">
         {label}
       </span>
     </motion.div>
@@ -77,24 +77,24 @@ const FlipDigit = ({ value, label }: { value: string; label: string }) => {
 const GridBackground = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
     {/* Radial gradient overlay */}
-    <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(59,130,246,0.18),transparent)]" />
-    <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_80%_80%,rgba(139,92,246,0.12),transparent)]" />
+    <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(99,102,241,0.08),transparent)]" />
+    <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_80%_80%,rgba(139,92,246,0.06),transparent)]" />
 
     {/* Grid lines */}
     <div
-      className="absolute inset-0 opacity-[0.07]"
+      className="absolute inset-0 opacity-[0.5]"
       style={{
         backgroundImage: `
-          linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)
+          linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px)
         `,
         backgroundSize: "80px 80px",
       }}
     />
 
     {/* Corner bleed */}
-    <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-blue-600/10 blur-[100px]" />
-    <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full bg-purple-600/10 blur-[100px]" />
+    <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-blue-400/10 blur-[100px]" />
+    <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full bg-indigo-400/10 blur-[100px]" />
   </div>
 );
 
@@ -119,7 +119,7 @@ const CursorGlow = () => {
         y: springY,
         translateX: "-50%",
         translateY: "-50%",
-        background: "radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)",
+        background: "radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)",
       }}
     />
   );
@@ -131,14 +131,14 @@ const LiveBadge = () => (
     initial={{ opacity: 0, y: -10 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay: 0.2, duration: 0.6 }}
-    className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/10 bg-white/[0.05] backdrop-blur-xl mb-8"
+    className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-black/10 bg-white/80 backdrop-blur-xl mb-8 shadow-sm"
   >
     <motion.span
       animate={{ opacity: [0.4, 1, 0.4] }}
       transition={{ duration: 1.8, repeat: Infinity }}
-      className="w-2 h-2 rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/50"
+      className="w-2 h-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-400/50"
     />
-    <span className="text-xs text-white/60 font-medium tracking-wide">
+    <span className="text-xs text-gray-500 font-medium tracking-wide">
       Building in progress — launching soon
     </span>
   </motion.div>
@@ -161,7 +161,7 @@ const Particles = () => {
       {particles.map((p) => (
         <motion.div
           key={p.id}
-          className="absolute rounded-full bg-blue-400/20"
+          className="absolute rounded-full bg-blue-400/30"
           style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size }}
           animate={{
             y: [0, -60, 0],
@@ -189,7 +189,7 @@ const CountdownPage = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-[#030712] overflow-hidden flex flex-col items-center justify-center px-6 py-0">
+    <div className="relative min-h-screen bg-[#f8f9ff] overflow-hidden flex flex-col items-center justify-center px-6 py-0">
       {/* Backgrounds */}
       <GridBackground />
       <Particles />
@@ -220,7 +220,7 @@ const CountdownPage = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35, duration: 0.8 }}
-          className="text-4xl sm:text-5xl md:text-6xl font-black text-white leading-[1.08] tracking-tight"
+          className="text-4xl sm:text-5xl md:text-6xl font-black text-gray-900 leading-[1.08] tracking-tight"
         >
           The Operating System{" "}
           <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
@@ -251,7 +251,7 @@ const CountdownPage = () => {
 
       {/* Giant watermark */}
       <div className="absolute bottom-[-80px] left-1/2 -translate-x-1/2 pointer-events-none select-none">
-        <h2 className="text-[160px] sm:text-[240px] md:text-[340px] font-black tracking-[-0.06em] text-white/[0.025] leading-none">
+        <h2 className="text-[160px] sm:text-[240px] md:text-[340px] font-black tracking-[-0.06em] text-black/[0.04] leading-none">
           AAKT
         </h2>
       </div>
