@@ -2,11 +2,11 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 // import App from './App.tsx'
-import CountPage from './pages/CountPage';
+import Website from './pages/Website';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     {/* <App /> */}
-    <CountPage/>
+    <Website/>
   </StrictMode>,
 )
