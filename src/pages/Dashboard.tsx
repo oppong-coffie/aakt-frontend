@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Moon, Sun } from "lucide-react";
+import { Bot, Moon, Sun } from "lucide-react";
 import { API_URL } from "../config/api";
 import AgentPanel from "../components/agent/AgentPanel";
 
@@ -29,6 +29,8 @@ const PortfolioIcon = () => (
 const SettingsIcon = () => (
   <div className="w-4 h-4 rounded-full bg-green-400"></div>
 );
+
+const AiIcon = () => <Bot size={18} className="text-blue-600" />;
 
 const MenuIcon = () => (
   <svg
@@ -114,6 +116,7 @@ const Dashboard = () => {
     return localStorage.getItem("theme") === "dark";
   });
   const location = useLocation();
+  const showFloatingAgent = !location.pathname.startsWith("/dashboard/ai");
 
   useEffect(() => {
     if (isDarkMode) {
@@ -140,8 +143,6 @@ const Dashboard = () => {
           },
         });
 
-        console.log(response);
-
         if (!response.ok) {
           throw new Error(`HTTP error ${response.status}`);
         }
@@ -150,7 +151,6 @@ const Dashboard = () => {
         // The backend returns businesses in a 'data' property
         const businessList = Array.isArray(data.data) ? data.data : [];
         setBusinesses(businessList);
-        console.log("Loaded businesses:", businessList);
       } catch (error) {
         console.error("Failed to load businesses", error);
         setBusinessError("Failed to load your businesses. Please refresh.");
@@ -453,6 +453,28 @@ const Dashboard = () => {
             </div>
           </div>
 
+          <Link
+            to="/dashboard/ai"
+            onClick={() => setIsSidebarOpen(false)}
+            className={`flex items-center ${
+              navCollapsed ? "px-2" : "gap-3 px-4"
+            } py-2.5 rounded-xl transition-colors duration-200 ${
+              location.pathname.startsWith("/dashboard/ai")
+                ? "bg-gray-200/80 dark:bg-slate-800 shadow-sm border border-gray-300/50 dark:border-slate-700 text-gray-900 dark:text-white"
+                : "text-black dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white"
+            }`}
+            title={navCollapsed ? "AAKT AI" : undefined}
+          >
+            <div className="w-6 flex justify-center">
+              <AiIcon />
+            </div>
+            <span
+              className={`font-medium dark:text-inherit text-sm ${navCollapsed ? "hidden" : ""}`}
+            >
+              AAKT AI
+            </span>
+          </Link>
+
           {/* Settings Group */}
           <div className="space-y-1 pt-2">
             <div
@@ -588,7 +610,7 @@ const Dashboard = () => {
       <main className="flex-1 overflow-auto bg-gray-50/10 dark:bg-transparent relative">
         <Outlet />
       </main>
-      <AgentPanel />
+      {showFloatingAgent && <AgentPanel />}
     </div>
   );
 };
