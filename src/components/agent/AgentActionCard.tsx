@@ -1,13 +1,36 @@
 import { Check } from "lucide-react";
 import type { AgentAction } from "../../api/agent.service";
 
-function formatInput(input: Record<string, unknown>) {
-  const entries = Object.entries(input).slice(0, 4);
-  if (entries.length === 0) {
-    return "No extra inputs";
+const HIDDEN_INPUT_FIELDS = new Set([
+  "businessId",
+  "folderId",
+  "phaseId",
+  "projectId",
+  "taskId",
+  "workloadId",
+]);
+
+function formatValue(value: unknown) {
+  if (Array.isArray(value)) {
+    return `${value.length} linked item${value.length === 1 ? "" : "s"}`;
   }
+  if (value && typeof value === "object") {
+    return "Configured";
+  }
+  return String(value);
+}
+
+function formatInput(input: Record<string, unknown>) {
+  const entries = Object.entries(input)
+    .filter(([key]) => !HIDDEN_INPUT_FIELDS.has(key))
+    .slice(0, 4);
+
+  if (entries.length === 0) {
+    return "Ready for approval";
+  }
+
   return entries
-    .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(", ") : String(value)}`)
+    .map(([key, value]) => `${key}: ${formatValue(value)}`)
     .join(" · ");
 }
 
@@ -25,7 +48,7 @@ export default function AgentActionCard({
   const isRejected = action.status === "rejected";
 
   return (
-    <div className="rounded-2xl border border-blue-100 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+    <div className="rounded-lg border border-blue-100 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -35,7 +58,7 @@ export default function AgentActionCard({
             {action.description}
           </p>
         </div>
-        <span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-600 dark:bg-blue-950">
+        <span className="rounded bg-blue-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-600 dark:bg-blue-950">
           {action.status}
         </span>
       </div>
@@ -48,7 +71,7 @@ export default function AgentActionCard({
           <button
             type="button"
             onClick={onConfirm}
-            className="inline-flex items-center gap-1 rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+            className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
           >
             <Check size={14} />
             Confirm
@@ -56,7 +79,7 @@ export default function AgentActionCard({
           <button
             type="button"
             onClick={onReject}
-            className="rounded-xl px-3 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-900"
+            className="rounded-lg px-3 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-900"
           >
             Reject
           </button>

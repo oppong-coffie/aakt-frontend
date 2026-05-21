@@ -116,6 +116,7 @@ const Dashboard = () => {
     return localStorage.getItem("theme") === "dark";
   });
   const location = useLocation();
+  const showFloatingAgent = !location.pathname.startsWith("/dashboard/ai");
 
   useEffect(() => {
     if (isDarkMode) {
@@ -142,8 +143,6 @@ const Dashboard = () => {
           },
         });
 
-        console.log(response);
-
         if (!response.ok) {
           throw new Error(`HTTP error ${response.status}`);
         }
@@ -152,7 +151,6 @@ const Dashboard = () => {
         // The backend returns businesses in a 'data' property
         const businessList = Array.isArray(data.data) ? data.data : [];
         setBusinesses(businessList);
-        console.log("Loaded businesses:", businessList);
       } catch (error) {
         console.error("Failed to load businesses", error);
         setBusinessError("Failed to load your businesses. Please refresh.");
@@ -612,7 +610,7 @@ const Dashboard = () => {
       <main className="flex-1 overflow-auto bg-gray-50/10 dark:bg-transparent relative">
         <Outlet />
       </main>
-      <AgentPanel />
+      {showFloatingAgent && <AgentPanel />}
     </div>
   );
 };
