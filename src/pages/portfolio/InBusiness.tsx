@@ -653,7 +653,7 @@ const AddFolderModal = ({
     setError("");
 
     try {
-      const response = await fetch(`http://localhost:3000/folders`, {
+      const response = await fetch(`${API_URL}/folders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -904,11 +904,11 @@ const Saas = () => {
       if (targetFolder) {
         let endpoint = "";
         if (draggedProject) {
-          endpoint = `http://localhost:3000/portfolio/projects/${draggedId}/folder`;
+          endpoint = `${API_URL}/portfolio/projects/${draggedId}/folder`;
         } else if (draggedTask) {
-          endpoint = `http://localhost:3000/businessitems/task/${draggedId}/folder`;
+          endpoint = `${API_URL}/businessitems/task/${draggedId}/folder`;
         } else if (draggedDoc) {
-          endpoint = `http://localhost:3000/businessdocuments/${draggedId}/folder`;
+          endpoint = `${API_URL}/businessdocuments/${draggedId}/folder`;
         }
 
         if (endpoint) {
