@@ -53,6 +53,7 @@ import BusinessDocs from "./pages/portfolio/BusinessDocs";
 import SettingsTemplate from "./pages/settings/Template";
 import SettingsIntegrations from "./pages/settings/Integrations";
 import SettingsIndex from "./pages/settings/Index";
+import AgentWorkspace from "./pages/agent/AgentWorkspace";
 
 const App = () => {
   return (
@@ -126,6 +127,7 @@ const App = () => {
             <Route path="template" element={<SettingsTemplate />} />
             <Route path="integrations" element={<SettingsIntegrations />} />
           </Route>
+          <Route path="ai" element={<AgentWorkspace />} />
 
           <Route path="finish" element={<Finish />} />
         </Route>

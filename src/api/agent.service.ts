@@ -21,6 +21,28 @@ export interface AgentMessage {
   actions?: AgentAction[];
 }
 
+export interface AgentConversationSummary {
+  conversationId: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  messageCount: number;
+}
+
+export interface AgentConversationMessage {
+  role: AgentRole;
+  content: string;
+  actionIds?: string[];
+  createdAt: string;
+}
+
+export interface AgentConversationDetail {
+  conversationId: string;
+  title: string;
+  messages: AgentConversationMessage[];
+  actions: AgentAction[];
+}
+
 export interface AgentChatResponse {
   answer: string;
   conversationId: string;
@@ -44,6 +66,16 @@ export const agentService = {
 
   rejectAction: async (actionId: string): Promise<AgentAction> => {
     const response = await apiClient.post(`/agent/actions/${actionId}/reject`);
+    return response.data.data;
+  },
+
+  listConversations: async (): Promise<AgentConversationSummary[]> => {
+    const response = await apiClient.get("/agent/conversations");
+    return response.data.data;
+  },
+
+  getConversation: async (conversationId: string): Promise<AgentConversationDetail> => {
+    const response = await apiClient.get(`/agent/conversations/${conversationId}`);
     return response.data.data;
   },
 };
