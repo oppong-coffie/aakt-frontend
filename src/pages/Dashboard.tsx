@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { Moon, Sun } from "lucide-react";
 import { API_URL } from "../config/api";
+import AgentPanel from "../components/agent/AgentPanel";
 
 // Icons (Simple SVGs)
 const HomeIcon = () => (
@@ -587,6 +588,7 @@ const Dashboard = () => {
       <main className="flex-1 overflow-auto bg-gray-50/10 dark:bg-transparent relative">
         <Outlet />
       </main>
+      <AgentPanel />
     </div>
   );
 };
