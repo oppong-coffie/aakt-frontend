@@ -165,7 +165,7 @@ const Dashboard = () => {
   const toggleDarkMode = () => setIsDarkMode((prev) => !prev);
 
   return (
-    <div className="flex h-screen bg-[#f0f0eb] dark:bg-slate-950 font-sans overflow-hidden transition-colors duration-300">
+    <div className="flex gap-4 h-screen bg-[#f0f0eb] dark:bg-slate-950 font-sans overflow-hidden transition-colors duration-300">
       {/* Mobile Toggle Button */}
       <button
         onClick={() => setIsSidebarOpen(true)}

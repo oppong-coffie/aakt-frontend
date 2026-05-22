@@ -1151,14 +1151,14 @@ const Homepage = () => {
 
         {/* Footer Banner: Finish Account Setup */}
         {completionPercentage < 100 && (
-          <div className="mt-12 w-full">
-            <motion.div className="bg-white rounded-[2.5rem] p-8 sm:p-10 shadow-sm border border-gray-100 flex flex-col justify-between items-center gap-6">
+          <div className="mt-12 w-[97%]">
+            <motion.div className="bg-white rounded-[1.5rem] p-4 sm:p-3 shadow-sm border border-gray-100 flex flex-col justify-between items-center gap-6">
               <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-6">
                 <div className="text-center sm:text-left">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  <h3 className="text-xl font-bold text-gray-900">
                     Finish setting up your account
                   </h3>
-                  <p className="text-gray-400 text-sm">
+                  <p className="text-gray-400 text-xs">
                     Things that you have missed should be filled.
                   </p>
                 </div>
@@ -1172,14 +1172,14 @@ const Homepage = () => {
                     else if (!completionData.feeling) navigate("/feeling");
                     else if (!completionData.skills) navigate("/skills");
                   }}
-                  className="px-10 py-3 border border-blue-600 text-blue-600 rounded-full font-bold text-sm hover:bg-blue-50 transition-colors whitespace-nowrap cursor-pointer"
+                  className="px-10 py-2 border border-blue-600 text-blue-600 rounded-full font-bold text-sm hover:bg-blue-50 transition-colors whitespace-nowrap cursor-pointer"
                 >
                   Finish It
                 </button>
               </div>
 
               {/* Progress Bar */}
-              <div className="w-full mt-4">
+              <div className="w-full">
                 <div className="flex justify-between text-xs font-bold text-gray-500 mb-2">
                   <span>Profile Completion</span>
                   <span className="text-blue-600">{completionPercentage}%</span>
