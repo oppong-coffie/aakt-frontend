@@ -81,8 +81,10 @@ const Register = () => {
           </div>
         </div>
 
-        <h2 className="text-xl font-bold text-gray-900 mb-2">
-          Ideas come true, faster
+        <h2 className="text-md font-bold text-gray-900 mt-4 mb-6">
+The Operating
+System for Modern
+Businesses.
         </h2>
 
         <p className="text-gray-500 text-sm mb-6">
@@ -104,7 +106,7 @@ const Register = () => {
             onChange={(e) => setFullName(e.target.value)}
           />
           <input
-            className="w-full px-1 py-1 mt-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
+            className="w-full px-1 py-1 mt-5 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
             type="email"
             placeholder="Email"
             value={email}
@@ -113,7 +115,7 @@ const Register = () => {
           
           <div className="relative mt-2">
             <input
-              className="w-full px-1 py-1 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors pr-10"
+              className="w-full px-1 py-1 border mt-5 border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors pr-10"
               type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={password}
@@ -122,7 +124,7 @@ const Register = () => {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute right-3 top-2/3 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
             >
               {showPassword ? <EyeOffIcon /> : <EyeIcon />}
             </button>
@@ -130,7 +132,7 @@ const Register = () => {
 
           <div className="relative mt-2">
             <input
-              className="w-full px-1 py-1 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors pr-10"
+              className="w-full px-1 py-1 mt-5 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors pr-10"
               type={showConfirmPassword ? "text" : "password"}
               placeholder="Confirm Password"
               value={confirmPassword}
@@ -139,7 +141,7 @@ const Register = () => {
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute right-3 top-2/3 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
             >
               {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
             </button>
@@ -183,11 +185,11 @@ const Register = () => {
 
         <p className="text-[10px] text-gray-400 mt-5 leading-relaxed">
           By continuing, you agree with our{" "}
-          <a href="#" className="text-blue-600 hover:underline">
+          <a href="/terms" className="text-blue-600 hover:underline">
             Terms & Services
           </a>{" "}
           and{" "}
-          <a href="#" className="text-blue-600 hover:underline">
+          <a href="/privacy" className="text-blue-600 hover:underline">
             Privacy Policy
           </a>
           .

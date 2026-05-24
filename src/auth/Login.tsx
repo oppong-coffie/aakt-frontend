@@ -163,11 +163,11 @@ const Login = () => {
 
         <p className="text-[10px] text-gray-400 mt-5 leading-relaxed">
           By continuing, you agree with our{" "}
-          <a href="#" className="text-blue-600 hover:underline">
+          <a href="/terms" className="text-blue-600 hover:underline">
             Terms & Services
           </a>{" "}
           and{" "}
-          <a href="#" className="text-blue-600 hover:underline">
+          <a href="/privacy" className="text-blue-600 hover:underline">
             Privacy Policy
           </a>
           .
