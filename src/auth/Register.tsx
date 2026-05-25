@@ -72,7 +72,26 @@ const Register = () => {
   };
 
   return (
-    <div className="flex items-center justify-center bg-gray-50 h-screen p-4 sm:p-0">
+    <div className="relative flex items-center justify-center bg-gray-50 h-screen p-4 sm:p-0">
+      <a
+        href="https://www.aakt.io/"
+        className="absolute top-4 left-4 sm:top-6 sm:left-6 inline-flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors group"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-4 w-4 transform group-hover:-translate-x-0.5 transition-transform"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fillRule="evenodd"
+            d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+            clipRule="evenodd"
+          />
+        </svg>
+        Back to website
+      </a>
+
       <div className="bg-white rounded-2xl shadow-sm w-full max-w-[400px] p-5 text-center mx-auto">
         {/* Logo Box */}
         <div className="mx-auto mb-3 w-fit">

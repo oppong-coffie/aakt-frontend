@@ -1,26 +1,481 @@
-// src/Tiptap.tsx
-import { useEditor, EditorContent } from '@tiptap/react'
-import { FloatingMenu, BubbleMenu } from '@tiptap/react/menus'
-import StarterKit from '@tiptap/starter-kit'
+import { useState, useEffect } from "react";
+import { useEditor, EditorContent } from "@tiptap/react";
+import { BubbleMenu, FloatingMenu } from "@tiptap/react/menus";
+import StarterKit from "@tiptap/starter-kit";
+import {
+  FileText,
+  Plus,
+  Trash2,
+  Bold,
+  Italic,
+  Strikethrough,
+  Code,
+  Heading1,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
+  Quote,
+  Terminal,
+  Undo,
+  Redo,
+} from "lucide-react";
 
-const Tiptap = () => {
-  const editor = useEditor({
-    extensions: [StarterKit], // define your extension array
-    content: '<p>Hello World!</p>', // initial content
-    editorProps: {
-      attributes: {
-        class: 'min-h-[156px] border border-[#e5e7eb] rounded-xl p-2',
-      },
-    },
-  })
-
-  return (
-    <>
-      <EditorContent editor={editor} />
-      <FloatingMenu editor={editor}>This is the floating menu</FloatingMenu>
-      <BubbleMenu editor={editor}>This is the bubble menu</BubbleMenu>
-    </>
-  )
+interface SavedDoc {
+  id: string;
+  title: string;
+  content: string;
+  updatedAt: string;
 }
 
-export default Tiptap
+const DEFAULT_DOCS: SavedDoc[] = [
+  {
+    id: "doc-1",
+    title: "Project Scope & Objectives",
+    content: "<h1>Project Scope</h1><p>This document details the goals and requirements for our upcoming SaaS infrastructure release.</p><h2>Objectives</h2><ul><li>Implement secure login APIs</li><li>Integrate Tiptap rich text editor</li><li>Set up responsive dashboards</li></ul>",
+    updatedAt: "5/24/2026",
+  },
+  {
+    id: "doc-2",
+    title: "Meeting Notes - Scaling Strategy",
+    content: "<h1>Meeting Notes</h1><p>Date: May 24, 2026</p><p>Attendees: Product, Engineering, Capital partners.</p><blockquote>Goal: Expand user base by 50% in Q3.</blockquote>",
+    updatedAt: "5/24/2026",
+  }
+];
+
+const MenuBar = ({ editor }: { editor: any }) => {
+  if (!editor) {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1 p-2 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 rounded-t-xl">
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleBold().run()}
+        disabled={!editor.can().chain().focus().toggleBold().run()}
+        className={`p-1.5 rounded-lg transition-colors ${
+          editor.isActive("bold")
+            ? "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 font-bold"
+            : "text-slate-500 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800/50"
+        }`}
+        title="Bold"
+      >
+        <Bold className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        disabled={!editor.can().chain().focus().toggleItalic().run()}
+        className={`p-1.5 rounded-lg transition-colors ${
+          editor.isActive("italic")
+            ? "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 font-bold"
+            : "text-slate-500 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800/50"
+        }`}
+        title="Italic"
+      >
+        <Italic className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleStrike().run()}
+        disabled={!editor.can().chain().focus().toggleStrike().run()}
+        className={`p-1.5 rounded-lg transition-colors ${
+          editor.isActive("strike")
+            ? "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 font-bold"
+            : "text-slate-500 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800/50"
+        }`}
+        title="Strike"
+      >
+        <Strikethrough className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleCode().run()}
+        disabled={!editor.can().chain().focus().toggleCode().run()}
+        className={`p-1.5 rounded-lg transition-colors ${
+          editor.isActive("code")
+            ? "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 font-bold"
+            : "text-slate-500 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800/50"
+        }`}
+        title="Inline Code"
+      >
+        <Code className="w-4 h-4" />
+      </button>
+      
+      <div className="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-1 self-center" />
+
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+        className={`p-1.5 rounded-lg transition-colors ${
+          editor.isActive("heading", { level: 1 })
+            ? "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 font-bold"
+            : "text-slate-500 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800/50"
+        }`}
+        title="Heading 1"
+      >
+        <Heading1 className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        className={`p-1.5 rounded-lg transition-colors ${
+          editor.isActive("heading", { level: 2 })
+            ? "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 font-bold"
+            : "text-slate-500 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800/50"
+        }`}
+        title="Heading 2"
+      >
+        <Heading2 className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+        className={`p-1.5 rounded-lg transition-colors ${
+          editor.isActive("heading", { level: 3 })
+            ? "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 font-bold"
+            : "text-slate-500 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800/50"
+        }`}
+        title="Heading 3"
+      >
+        <Heading3 className="w-4 h-4" />
+      </button>
+
+      <div className="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-1 self-center" />
+
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        className={`p-1.5 rounded-lg transition-colors ${
+          editor.isActive("bulletList")
+            ? "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 font-bold"
+            : "text-slate-500 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800/50"
+        }`}
+        title="Bullet List"
+      >
+        <List className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        className={`p-1.5 rounded-lg transition-colors ${
+          editor.isActive("orderedList")
+            ? "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 font-bold"
+            : "text-slate-500 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800/50"
+        }`}
+        title="Ordered List"
+      >
+        <ListOrdered className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+        className={`p-1.5 rounded-lg transition-colors ${
+          editor.isActive("codeBlock")
+            ? "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 font-bold"
+            : "text-slate-500 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800/50"
+        }`}
+        title="Code Block"
+      >
+        <Terminal className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleBlockquote().run()}
+        className={`p-1.5 rounded-lg transition-colors ${
+          editor.isActive("blockquote")
+            ? "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 font-bold"
+            : "text-slate-500 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800/50"
+        }`}
+        title="Blockquote"
+      >
+        <Quote className="w-4 h-4" />
+      </button>
+
+      <div className="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-1 self-center" />
+
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().undo().run()}
+        disabled={!editor.can().chain().focus().undo().run()}
+        className="p-1.5 rounded-lg transition-colors text-slate-500 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800/50 disabled:opacity-40"
+        title="Undo"
+      >
+        <Undo className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().redo().run()}
+        disabled={!editor.can().chain().focus().redo().run()}
+        className="p-1.5 rounded-lg transition-colors text-slate-500 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800/50 disabled:opacity-40"
+        title="Redo"
+      >
+        <Redo className="w-4 h-4" />
+      </button>
+    </div>
+  );
+};
+
+const Documents = () => {
+  const [docs, setDocs] = useState<SavedDoc[]>(() => {
+    const saved = localStorage.getItem("workspace_docs");
+    return saved ? JSON.parse(saved) : DEFAULT_DOCS;
+  });
+  const [activeDocId, setActiveDocId] = useState<string>("doc-1");
+  const [newTitle, setNewTitle] = useState("");
+
+  const activeDoc = docs.find((d) => d.id === activeDocId) || docs[0];
+
+  useEffect(() => {
+    localStorage.setItem("workspace_docs", JSON.stringify(docs));
+  }, [docs]);
+
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: activeDoc ? activeDoc.content : "",
+    editorProps: {
+      attributes: {
+        class: "min-h-[400px] max-h-[600px] overflow-y-auto outline-none p-6 text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 rounded-b-xl border border-t-0 border-slate-200 dark:border-slate-800 tiptap",
+      },
+    },
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML();
+      if (activeDocId) {
+        setDocs((prevDocs) =>
+          prevDocs.map((doc) =>
+            doc.id === activeDocId
+              ? { ...doc, content: html, updatedAt: new Date().toLocaleDateString() }
+              : doc
+          )
+        );
+      }
+    },
+  });
+
+  // Keep editor content in sync when activeDocId changes
+  useEffect(() => {
+    if (editor && activeDoc && editor.getHTML() !== activeDoc.content) {
+      editor.commands.setContent(activeDoc.content);
+    }
+  }, [activeDocId, editor]);
+
+  const handleCreateDoc = (e: React.FormEvent) => {
+    e.preventDefault();
+    const title = newTitle.trim() || `Untitled Document`;
+    const newDoc: SavedDoc = {
+      id: Date.now().toString(),
+      title,
+      content: "<h1>New Document</h1><p>Start writing here...</p>",
+      updatedAt: new Date().toLocaleDateString(),
+    };
+    setDocs([newDoc, ...docs]);
+    setActiveDocId(newDoc.id);
+    setNewTitle("");
+  };
+
+  const handleDeleteDoc = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const filtered = docs.filter((d) => d.id !== id);
+    setDocs(filtered);
+    if (activeDocId === id && filtered.length > 0) {
+      setActiveDocId(filtered[0].id);
+    }
+  };
+
+  const handleRenameActiveDoc = (title: string) => {
+    setDocs((prevDocs) =>
+      prevDocs.map((doc) =>
+        doc.id === activeDocId
+          ? { ...doc, title }
+          : doc
+      )
+    );
+  };
+
+  return (
+    <div className="p-6 max-w-6xl mx-auto space-y-6 text-slate-800 dark:text-slate-100 min-h-screen">
+      {/* Header */}
+      <div className="flex items-center gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
+        <div className="p-3 bg-blue-100 dark:bg-blue-950/50 rounded-xl">
+          <FileText className="w-8 h-8 text-blue-600 dark:text-blue-500" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight font-space-grotesk">Workspace Documents</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Write, edit, and format workspace notes, project scopes, and wiki articles</p>
+        </div>
+      </div>
+
+      {/* Main Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Left Column: Form & Saved Docs */}
+        <div className="space-y-6 lg:col-span-1">
+          {/* Create Doc Form */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
+            <h2 className="text-lg font-bold mb-4 font-space-grotesk flex items-center gap-2">
+              <Plus className="w-5 h-5 text-blue-600" /> New Document
+            </h2>
+            <form onSubmit={handleCreateDoc} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Document Title</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Q3 Planning Session"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold rounded-xl text-sm transition-all shadow-md shadow-blue-500/10 cursor-pointer"
+              >
+                Create Document
+              </button>
+            </form>
+          </div>
+
+          {/* Doc List */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col max-h-[400px]">
+            <h3 className="text-md font-bold mb-3 font-space-grotesk text-slate-600 dark:text-slate-300">Documents Library</h3>
+            <div className="space-y-2 overflow-y-auto flex-1 pr-1">
+              {docs.map((doc) => (
+                <div
+                  key={doc.id}
+                  onClick={() => setActiveDocId(doc.id)}
+                  className={`flex items-start justify-between gap-3 p-3 rounded-xl cursor-pointer border transition-all ${
+                    activeDocId === doc.id
+                      ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900"
+                      : "bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-900 hover:bg-slate-100 dark:hover:bg-slate-900/50"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className={`p-1.5 rounded-lg shrink-0 ${
+                      activeDocId === doc.id ? "bg-blue-500 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-500"
+                    }`}>
+                      <FileText className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold truncate text-slate-800 dark:text-slate-200">{doc.title}</p>
+                      <p className="text-[10px] text-slate-400 dark:text-slate-500">{doc.updatedAt}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={(e) => handleDeleteDoc(doc.id, e)}
+                    className="p-1 text-slate-400 hover:text-red-500 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors shrink-0"
+                    title="Remove Document"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+              {docs.length === 0 && (
+                <p className="text-xs text-slate-400 text-center py-6">No documents in workspace.</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Editor */}
+        <div className="lg:col-span-3 space-y-4">
+          {activeDoc ? (
+            <div className="flex flex-col h-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4">
+                <input
+                  type="text"
+                  value={activeDoc.title}
+                  onChange={(e) => handleRenameActiveDoc(e.target.value)}
+                  className="text-lg font-bold font-space-grotesk bg-transparent border-none outline-none text-slate-800 dark:text-slate-100 flex-1 focus:ring-2 focus:ring-blue-500/25 rounded-md px-1"
+                />
+                <span className="text-xs text-slate-400 font-medium whitespace-nowrap">
+                  Saved: {activeDoc.updatedAt}
+                </span>
+              </div>
+
+              <div className="flex flex-col flex-1">
+                <MenuBar editor={editor} />
+                <div className="relative flex-1">
+                  <EditorContent editor={editor} />
+                  {editor && (
+                    <BubbleMenu
+                      editor={editor}
+                      tippyOptions={{ duration: 100 }}
+                      className="flex items-center gap-0.5 bg-slate-950 text-white rounded-lg shadow-lg border border-slate-800 p-1"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleBold().run()}
+                        className={`p-1 hover:bg-slate-800 rounded transition-colors ${
+                          editor.isActive("bold") ? "text-blue-400" : "text-slate-300"
+                        }`}
+                      >
+                        <Bold className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleItalic().run()}
+                        className={`p-1 hover:bg-slate-800 rounded transition-colors ${
+                          editor.isActive("italic") ? "text-blue-400" : "text-slate-300"
+                        }`}
+                      >
+                        <Italic className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleStrike().run()}
+                        className={`p-1 hover:bg-slate-800 rounded transition-colors ${
+                          editor.isActive("strike") ? "text-blue-400" : "text-slate-300"
+                        }`}
+                      >
+                        <Strikethrough className="w-3.5 h-3.5" />
+                      </button>
+                    </BubbleMenu>
+                  )}
+
+                  {editor && (
+                    <FloatingMenu
+                      editor={editor}
+                      tippyOptions={{ duration: 100 }}
+                      className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-md p-1"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+                        className="p-1 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
+                      >
+                        <Heading1 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                        className="p-1 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
+                      >
+                        <Heading2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleBulletList().run()}
+                        className="p-1 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
+                      >
+                        <List className="w-3.5 h-3.5" />
+                      </button>
+                    </FloatingMenu>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-20 shadow-xs text-center flex flex-col items-center justify-center min-h-[450px]">
+              <FileText className="w-16 h-16 text-slate-300 dark:text-slate-700 mb-4" />
+              <h4 className="text-lg font-bold text-slate-600 dark:text-slate-300 mb-1">No Active Document</h4>
+              <p className="text-sm text-slate-400 max-w-sm">Create a document from the left library pane to begin writing and styling notes.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Documents;

@@ -564,58 +564,15 @@ const Dashboard = () => {
             navCollapsed ? "px-1" : "px-2"
           }`}
         >
-          <button
-            onClick={toggleDarkMode}
-            className={`w-full flex items-center ${
-              navCollapsed ? "justify-center" : "gap-3 px-3"
-            } py-2 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors group`}
-            title={isDarkMode ? "Light Mode" : "Dark Mode"}
-          >
-            <div className="w-6 flex justify-center group-hover:text-blue-600 transition-colors">
-              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </div>
-            {!navCollapsed && (
-              <span className="text-sm font-medium">
-                {isDarkMode ? "Light Mode" : "Dark Mode"}
-              </span>
-            )}
-          </button>
+  
 
-          <Link
-            to="/login"
-            className={`w-full flex items-center ${
-              navCollapsed ? "justify-center" : "gap-3 px-3"
-            } py-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors group`}
-            title="Sign Out"
-            onClick={() => {
-              localStorage.removeItem("token");
-              setIsSidebarOpen(false);
-            }}
-          >
-            <div className="w-6 flex justify-center transition-transform group-hover:-translate-x-0.5">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
-            </div>
-            {!navCollapsed && <span className="text-sm font-medium">Sign Out</span>}
-          </Link>
+        
         </div>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto bg-gray-50/10 dark:bg-transparent relative">
-        <Outlet />
+        <Outlet context={{ isDarkMode, toggleDarkMode }} />
       </main>
       {showFloatingAgent && <AgentPanel />}
     </div>
