@@ -400,7 +400,6 @@ const Documents = () => {
                   {editor && (
                     <BubbleMenu
                       editor={editor}
-                      tippyOptions={{ duration: 100 }}
                       className="flex items-center gap-0.5 bg-slate-950 text-white rounded-lg shadow-lg border border-slate-800 p-1"
                     >
                       <button
@@ -436,7 +435,6 @@ const Documents = () => {
                   {editor && (
                     <FloatingMenu
                       editor={editor}
-                      tippyOptions={{ duration: 100 }}
                       className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-md p-1"
                     >
                       <button

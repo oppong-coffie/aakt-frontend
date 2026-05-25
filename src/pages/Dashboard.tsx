@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Bot, Moon, Sun } from "lucide-react";
+import { Bot } from "lucide-react";
 import { API_URL } from "../config/api";
 import AgentPanel from "../components/agent/AgentPanel";
 
