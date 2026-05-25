@@ -50,10 +50,16 @@ import ShowBusinessDoc from "./pages/portfolio/ShowBusinessDoc";
 import Block2 from "./pages/portfolio/Block";
 import BusinessDocs from "./pages/portfolio/BusinessDocs";
 
-import SettingsTemplate from "./pages/settings/Template";
-import SettingsIntegrations from "./pages/settings/Integrations";
-import SettingsIndex from "./pages/settings/Index";
+import IntegrationsIndex from "./pages/settings/Index";
+import IntegrationsYouTube from "./pages/settings/YouTube";
+import IntegrationsDocuments from "./pages/settings/Documents";
+import IntegrationsSpreadsheet from "./pages/settings/Spreadsheet";
+import IntegrationsWhiteboard from "./pages/settings/Whiteboard";
+import IntegrationsFiles from "./pages/settings/Files";
+import IntegrationsSlides from "./pages/settings/Slides";
 import AgentWorkspace from "./pages/agent/AgentWorkspace";
+import Privacy from "./auth/Privacy";
+import Terms from "./auth/Terms";
 
 const App = () => {
   return (
@@ -63,6 +69,8 @@ const App = () => {
         {/* Public Routes */}
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Login />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
         {/* <Route path="/register1" element={<Register1 />} /> */}
         <Route path="/onboard" element={<Onboard />} />
         <Route path="/otp" element={<Otp />} />
@@ -121,11 +129,15 @@ const App = () => {
             
             
           </Route>
-          {/* Settings Routes */}
+          {/* Integrations Routes */}
           <Route path="settings" element={<Outlet />}>
-            <Route index element={<SettingsIndex />} />
-            <Route path="template" element={<SettingsTemplate />} />
-            <Route path="integrations" element={<SettingsIntegrations />} />
+            <Route index element={<IntegrationsIndex />} />
+            <Route path="youtube" element={<IntegrationsYouTube />} />
+            <Route path="documents" element={<IntegrationsDocuments />} />
+            <Route path="spreadsheet" element={<IntegrationsSpreadsheet />} />
+            <Route path="whiteboard" element={<IntegrationsWhiteboard />} />
+            <Route path="files" element={<IntegrationsFiles />} />
+            <Route path="slides" element={<IntegrationsSlides />} />
           </Route>
           <Route path="ai" element={<AgentWorkspace />} />
 

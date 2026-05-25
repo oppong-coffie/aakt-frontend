@@ -72,7 +72,26 @@ const Register = () => {
   };
 
   return (
-    <div className="flex items-center justify-center bg-gray-50 h-screen p-4 sm:p-0">
+    <div className="relative flex items-center justify-center bg-gray-50 h-screen p-4 sm:p-0">
+      <a
+        href="https://www.aakt.io/"
+        className="absolute top-4 left-4 sm:top-6 sm:left-6 inline-flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors group"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-4 w-4 transform group-hover:-translate-x-0.5 transition-transform"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fillRule="evenodd"
+            d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+            clipRule="evenodd"
+          />
+        </svg>
+        Back to website
+      </a>
+
       <div className="bg-white rounded-2xl shadow-sm w-full max-w-[400px] p-5 text-center mx-auto">
         {/* Logo Box */}
         <div className="mx-auto mb-3 w-fit">
@@ -81,8 +100,10 @@ const Register = () => {
           </div>
         </div>
 
-        <h2 className="text-xl font-bold text-gray-900 mb-2">
-          Ideas come true, faster
+        <h2 className="text-md font-bold text-gray-900 mt-4 mb-6">
+The Operating
+System for Modern
+Businesses.
         </h2>
 
         <p className="text-gray-500 text-sm mb-6">
@@ -104,7 +125,7 @@ const Register = () => {
             onChange={(e) => setFullName(e.target.value)}
           />
           <input
-            className="w-full px-1 py-1 mt-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
+            className="w-full px-1 py-1 mt-5 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
             type="email"
             placeholder="Email"
             value={email}
@@ -113,7 +134,7 @@ const Register = () => {
           
           <div className="relative mt-2">
             <input
-              className="w-full px-1 py-1 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors pr-10"
+              className="w-full px-1 py-1 border mt-5 border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors pr-10"
               type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={password}
@@ -122,7 +143,7 @@ const Register = () => {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute right-3 top-2/3 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
             >
               {showPassword ? <EyeOffIcon /> : <EyeIcon />}
             </button>
@@ -130,7 +151,7 @@ const Register = () => {
 
           <div className="relative mt-2">
             <input
-              className="w-full px-1 py-1 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors pr-10"
+              className="w-full px-1 py-1 mt-5 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors pr-10"
               type={showConfirmPassword ? "text" : "password"}
               placeholder="Confirm Password"
               value={confirmPassword}
@@ -139,7 +160,7 @@ const Register = () => {
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute right-3 top-2/3 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
             >
               {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
             </button>
@@ -183,11 +204,11 @@ const Register = () => {
 
         <p className="text-[10px] text-gray-400 mt-5 leading-relaxed">
           By continuing, you agree with our{" "}
-          <a href="#" className="text-blue-600 hover:underline">
+          <a href="/terms" className="text-blue-600 hover:underline">
             Terms & Services
           </a>{" "}
           and{" "}
-          <a href="#" className="text-blue-600 hover:underline">
+          <a href="/privacy" className="text-blue-600 hover:underline">
             Privacy Policy
           </a>
           .

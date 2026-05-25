@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Bot, Moon, Sun } from "lucide-react";
+import { Bot } from "lucide-react";
 import { API_URL } from "../config/api";
 import AgentPanel from "../components/agent/AgentPanel";
 
@@ -26,8 +26,11 @@ const PortfolioIcon = () => (
   <div className="w-4 h-4 rounded-full bg-linear-to-br from-blue-500 to-indigo-600"></div>
 );
 
-const SettingsIcon = () => (
-  <div className="w-4 h-4 rounded-full bg-green-400"></div>
+const IntegrationsIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+    <path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3" />
+    <line x1="8" y1="12" x2="16" y2="12" />
+  </svg>
 );
 
 const AiIcon = () => <Bot size={18} className="text-blue-600" />;
@@ -107,7 +110,7 @@ const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [bizInfraOpen, setBizInfraOpen] = useState(false);
   const [portfolioOpen, setPortfolioOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [integrationsOpen, setIntegrationsOpen] = useState(false);
   const [businesses, setBusinesses] = useState<Array<{ _id: string; businessName: string }>>([]);
   const [businessLoading, setBusinessLoading] = useState(true);
   const [businessError, setBusinessError] = useState<string | null>(null);
@@ -252,7 +255,7 @@ const Dashboard = () => {
 
         {/* Navigation */}
         <nav
-          className={`flex-1 space-y-4 transition-all duration-300 overflow-hidden ${
+          className={`flex-1 space-y-4 transition-all duration-300 overflow-y-auto no-scrollbar ${
             navCollapsed ? "px-1" : ""
           }`}
         >
@@ -325,12 +328,12 @@ const Dashboard = () => {
               )}
             </div>
             <div
-              className={`overflow-hidden transition-all duration-200 ease-out ${
+              className={`transition-all duration-200 ease-out ${
                 navCollapsed
                   ? "hidden"
                   : portfolioOpen
-                    ? "max-h-[420px] opacity-100"
-                    : "max-h-0 opacity-70"
+                    ? "max-h-[150px] opacity-100 overflow-y-auto"
+                    : "max-h-0 opacity-70 overflow-hidden"
               }`}
             >
               <div className="pl-4 space-y-1 border-l-2 border-gray-100 ml-5">
@@ -413,12 +416,12 @@ const Dashboard = () => {
               )}
             </div>
             <div
-              className={`overflow-hidden transition-all duration-200 ease-out ${
+              className={`transition-all duration-200 ease-out ${
                 navCollapsed
                   ? "hidden"
                   : bizInfraOpen
-                    ? "max-h-[320px] opacity-100"
-                    : "max-h-0 opacity-70"
+                    ? "max-h-[150px] opacity-100 overflow-y-auto"
+                    : "max-h-0 opacity-70 overflow-hidden"
               }`}
             >
               <div className="pl-4 space-y-1 border-l-2 border-gray-100 ml-5">
@@ -475,7 +478,7 @@ const Dashboard = () => {
             </span>
           </Link>
 
-          {/* Settings Group */}
+          {/* Integrations Group */}
           <div className="space-y-1 pt-2">
             <div
               className={`group flex items-center justify-between gap-2 mb-2 ${
@@ -492,13 +495,13 @@ const Dashboard = () => {
                 className={`flex items-center ${
                   navCollapsed ? "justify-center" : "gap-3"
                 } text-black font-bold text-xs tracking-wider transition-colors duration-200`}
-                title={navCollapsed ? "Settings" : undefined}
+                title={navCollapsed ? "Integrations" : undefined}
               >
-                <div className="w-6 flex justify-center"><SettingsIcon /></div>
+                <div className="w-6 flex justify-center"><IntegrationsIcon /></div>
                 <span
                   className={navCollapsed ? "hidden" : "dark:text-gray-300"}
                 >
-                  Settings
+                  Integrations
                 </span>
               </Link>
               {!navCollapsed && (
@@ -506,32 +509,36 @@ const Dashboard = () => {
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();
-                    setSettingsOpen((o) => !o);
+                    setIntegrationsOpen((o) => !o);
                   }}
                   className="p-1 rounded transition-colors duration-200 hover:bg-gray-200/80 group-hover:bg-gray-200/80"
                   aria-label={
-                    settingsOpen
-                      ? "Collapse Settings menu"
-                      : "Expand Settings menu"
+                    integrationsOpen
+                      ? "Collapse Integrations menu"
+                      : "Expand Integrations menu"
                   }
                 >
-                  <ChevronIcon open={settingsOpen} />
+                  <ChevronIcon open={integrationsOpen} />
                 </button>
               )}
             </div>
             <div
-              className={`overflow-hidden transition-all duration-200 ease-out ${
+              className={`transition-all duration-200 ease-out ${
                 navCollapsed
                   ? "hidden"
-                  : settingsOpen
-                    ? "max-h-[320px] opacity-100"
-                    : "max-h-0 opacity-70"
+                  : integrationsOpen
+                    ? "max-h-[150px] opacity-100 overflow-y-auto"
+                    : "max-h-0 opacity-70 overflow-hidden"
               }`}
             >
               <div className="pl-4 space-y-1 border-l-2 border-gray-100 ml-5">
                 {[
-                  { name: "Template" },
-                  { name: "Integrations" }
+                  { name: "YouTube" },
+                  { name: "Documents" },
+                  { name: "Spreadsheet" },
+                  { name: "Whiteboard" },
+                  { name: "Files" },
+                  { name: "Slides" }
                 ].map((item) => (
                   <Link
                     key={item.name}
@@ -557,58 +564,15 @@ const Dashboard = () => {
             navCollapsed ? "px-1" : "px-2"
           }`}
         >
-          <button
-            onClick={toggleDarkMode}
-            className={`w-full flex items-center ${
-              navCollapsed ? "justify-center" : "gap-3 px-3"
-            } py-2 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors group`}
-            title={isDarkMode ? "Light Mode" : "Dark Mode"}
-          >
-            <div className="w-6 flex justify-center group-hover:text-blue-600 transition-colors">
-              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </div>
-            {!navCollapsed && (
-              <span className="text-sm font-medium">
-                {isDarkMode ? "Light Mode" : "Dark Mode"}
-              </span>
-            )}
-          </button>
+  
 
-          <Link
-            to="/login"
-            className={`w-full flex items-center ${
-              navCollapsed ? "justify-center" : "gap-3 px-3"
-            } py-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors group`}
-            title="Sign Out"
-            onClick={() => {
-              localStorage.removeItem("token");
-              setIsSidebarOpen(false);
-            }}
-          >
-            <div className="w-6 flex justify-center transition-transform group-hover:-translate-x-0.5">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
-            </div>
-            {!navCollapsed && <span className="text-sm font-medium">Sign Out</span>}
-          </Link>
+        
         </div>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto bg-gray-50/10 dark:bg-transparent relative">
-        <Outlet />
+        <Outlet context={{ isDarkMode, toggleDarkMode }} />
       </main>
       {showFloatingAgent && <AgentPanel />}
     </div>
