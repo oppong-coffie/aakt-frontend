@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import EditItemModal from "../../components/EditItemModal";
+import apiClient from "../../api/apiClient";
 import {
   DragDropContext,
   Droppable,
@@ -137,11 +138,10 @@ const SearchModal = ({
                     <button
                       key={category}
                       onClick={() => setActiveCategory(category)}
-                      className={`text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                        activeCategory === category
+                      className={`text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${activeCategory === category
                           ? "bg-blue-600/10 dark:bg-blue-600/20 text-blue-600 dark:text-blue-400"
                           : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-gray-200"
-                      }`}
+                        }`}
                     >
                       {category}
                     </button>
@@ -189,11 +189,6 @@ const defaultCategories = [
   { id: "block", label: "Documents", image: null as string | null },
 ];
 
-const phaseLabels: Record<string, string> = {
-  phase1: "Phase 1",
-  phase2: "Phase 2",
-  phase3: "Phase 3",
-};
 
 const CreationModeModal = ({
   isOpen,
@@ -286,7 +281,7 @@ const CreationModeModal = ({
 
 const Phase = () => {
   const navigate = useNavigate();
-  const { id, phaseId } = useParams();
+  const { id: skillId, projectId, phaseId } = useParams<{ id: string; projectId: string; phaseId: string }>();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
@@ -302,6 +297,56 @@ const Phase = () => {
     label: string;
     image?: string | null;
   } | null>(null);
+
+  const [skillName, setSkillName] = useState("Skill");
+  const [projectName, setProjectName] = useState("Project");
+  const [phaseName, setPhaseName] = useState("Phase");
+  const [isLoading, setIsLoading] = useState(true);
+
+
+  // Fetch skill name
+  useEffect(() => {
+    const fetchSkillName = async () => {
+      try {
+        const response = await apiClient.get(`/skills`);
+        if (response.data) {
+          const skill = response.data.find((s: any) => s._id === skillId);
+          if (skill) {
+            setSkillName(skill.skillname);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching skill name:", error);
+      }
+    };
+    if (skillId) fetchSkillName();
+  }, [skillId]);
+
+  // Fetch project and phase details
+  useEffect(() => {
+    const fetchDetails = async () => {
+      try {
+        setIsLoading(true);
+        if (projectId) {
+          const projectRes = await apiClient.get(`/skills/projects/${projectId}`);
+          if (projectRes.data) {
+            setProjectName(projectRes.data.projectname);
+          }
+        }
+        if (phaseId) {
+          const phaseRes = await apiClient.get(`/skills/phases/${phaseId}`);
+          if (phaseRes.data) {
+            setPhaseName(phaseRes.data.phasename);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching details:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDetails();
+  }, [projectId, phaseId]);
 
   const dropdownItems = [
     { id: "project", label: "Project" },
@@ -339,24 +384,15 @@ const Phase = () => {
     setCategories(items);
   };
 
-  const skillName = id
-    ? id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, " ")
-    : "Skillset";
-  const skillPath = id
-    ? `/dashboard/bizinfra/skillset/${id}`
-    : "/dashboard/bizinfra/skillset";
-  const projectPath = id
-    ? `/dashboard/bizinfra/skillset/${id}/project`
-    : "/dashboard/bizinfra/skillset";
-  const phaseLabel =
-    (phaseId && phaseLabels[phaseId as keyof typeof phaseLabels]) || "Phase";
-  const phasePath =
-    id && phaseId
-      ? `/dashboard/bizinfra/skillset/${id}/project/${phaseId}`
-      : "/dashboard/bizinfra/skillset";
+  const skillPath = `/dashboard/bizinfra/skillset/${skillId || ""}/projects`;
+  const projectPath = `/dashboard/bizinfra/skillset/${skillId || ""}/projects/${projectId || ""}`;
+  const phasePath = `/dashboard/bizinfra/skillset/${skillId || ""}/projects/${projectId || ""}/${phaseId || ""}`;
 
   return (
     <div className="flex flex-col h-[calc(100vh-200px)] bg-[#f0f0eb] dark:bg-slate-950 px-4 sm:px-8 relative overflow-hidden transition-colors duration-300">
+      {isLoading && (
+        <div className="absolute top-0 left-0 right-0 h-1 bg-blue-600 animate-pulse z-50 pointer-events-none opacity-75" />
+      )}
       <SearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
@@ -376,8 +412,8 @@ const Phase = () => {
               { label: "BizInfra", to: "/dashboard/bizinfra" },
               { label: "Skillset", to: "/dashboard/bizinfra/skillset" },
               { label: skillName, to: skillPath },
-              { label: "Project", to: projectPath },
-              { label: phaseLabel, to: phasePath },
+              { label: projectName, to: projectPath },
+              { label: phaseName, to: phasePath },
             ]}
           />
         </div>
@@ -454,12 +490,11 @@ const Phase = () => {
                         ref={provided.innerRef}
                         {...provided.dragHandleProps}
                         {...provided.draggableProps}
-                        className={`relative group w-64 max-w-xs transition-all ${
-                          snapshot.isDragging ? "z-50 opacity-80" : ""
-                        }`}
+                        className={`relative group w-64 max-w-xs transition-all ${snapshot.isDragging ? "z-50 opacity-80" : ""
+                          }`}
                       >
                         <Link
-                          to={`/dashboard/bizinfra/skillset/${id}/${cat.id}`}
+                          to={`/dashboard/bizinfra/skillset/${skillId || ""}/${cat.id}?phaseId=${phaseId || ""}`}
                           className="block"
                         >
                           {/* Hover Actions */}
@@ -488,11 +523,10 @@ const Phase = () => {
                           </div>
 
                           <motion.div
-                            className={`flex flex-col items-center gap-3 w-full cursor-pointer p-6 rounded-[2.5rem] hover:bg-gray-100 dark:hover:bg-slate-900/50 transition-all font-bold ${
-                              snapshot.isDragging
+                            className={`flex flex-col items-center gap-3 w-full cursor-pointer p-6 rounded-[2.5rem] hover:bg-gray-100 dark:hover:bg-slate-900/50 transition-all font-bold ${snapshot.isDragging
                                 ? "bg-white dark:bg-slate-800 shadow-lg"
                                 : ""
-                            }`}
+                              }`}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                           >

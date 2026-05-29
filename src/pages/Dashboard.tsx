@@ -484,13 +484,13 @@ const Dashboard = () => {
               className={`group flex items-center justify-between gap-2 mb-2 ${
                 navCollapsed ? "px-2" : "px-4"
               } py-2 rounded-xl transition-colors duration-200 ${
-                location.pathname.startsWith("/dashboard/settings")
+                location.pathname.startsWith("/dashboard/integrations")
                   ? "bg-gray-200/80 dark:bg-slate-800 shadow-sm border border-gray-300/50 dark:border-slate-700 text-gray-900 dark:text-white"
                   : "hover:bg-gray-100 dark:hover:bg-slate-800"
               }`}
             >
               <Link
-                to="/dashboard/settings"
+                to="/dashboard/integrations"
                 onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center ${
                   navCollapsed ? "justify-center" : "gap-3"
@@ -542,7 +542,7 @@ const Dashboard = () => {
                 ].map((item) => (
                   <Link
                     key={item.name}
-                    to={`/dashboard/settings/${item.name.toLowerCase()}`}
+                    to={`/dashboard/integrations/${item.name.toLowerCase()}`}
                     onClick={() => setIsSidebarOpen(false)}
                     className={`block py-2 px-2 rounded-lg text-sm font-medium transition-colors ${
                       location.pathname.includes(item.name.toLowerCase())

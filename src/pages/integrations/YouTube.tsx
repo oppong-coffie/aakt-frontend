@@ -1,65 +1,97 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Youtube, Plus, Trash2, Play, ExternalLink } from "lucide-react";
+import axios from "axios";
+import { API_URL } from "../../config/api";
 
 interface SavedVideo {
-  id: string;
+  _id: string;
   videoId: string;
   title: string;
   addedAt: string;
 }
 
-const DEFAULT_VIDEOS: SavedVideo[] = [
-  {
-    id: "default-1",
-    videoId: "EngW7tLk6R8",
-    title: "How to Build a SaaS Startup - Step-by-Step Guide",
-    addedAt: "Tutorial",
-  },
-  {
-    id: "default-2",
-    videoId: "zojyEzWyr8U",
-    title: "Business Infrastructure & Scaling Strategies",
-    addedAt: "Business",
-  }
-];
-
 const YouTube = () => {
   const [videoUrl, setVideoUrl] = useState("");
-  const [activeVideoId, setActiveVideoId] = useState("EngW7tLk6R8");
-  const [savedVideos, setSavedVideos] = useState<SavedVideo[]>(DEFAULT_VIDEOS);
+  const [activeVideoId, setActiveVideoId] = useState("");
+  const [savedVideos, setSavedVideos] = useState<SavedVideo[]>([]);
   const [videoTitle, setVideoTitle] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const getToken = () => localStorage.getItem("token");
+
+  // Fetch saved videos from backend on mount
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        setLoading(true);
+        const token = getToken();
+        const res = await axios.get(`${API_URL}/youtube`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setSavedVideos(res.data);
+        if (res.data.length > 0) {
+          setActiveVideoId(res.data[0].videoId);
+        }
+      } catch (err) {
+        console.error("Failed to fetch YouTube videos from database:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchVideos();
+  }, []);
 
   const extractVideoId = (url: string): string | null => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
+    return match && match[2].length === 11 ? match[2] : null;
   };
 
-  const handleEmbed = (e: React.FormEvent) => {
+  const handleEmbed = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!videoUrl) return;
-    
+
     const id = extractVideoId(videoUrl);
     if (!id) {
       alert("Invalid YouTube URL. Please enter a valid watch link or sharing link.");
       return;
     }
-    setActiveVideoId(id);
+
     const title = videoTitle.trim() || `YouTube Video (${id})`;
-    const newVideo: SavedVideo = {
-      id: Date.now().toString(),
-      videoId: id,
-      title: title,
-      addedAt: new Date().toLocaleDateString(),
-    };
-    setSavedVideos([newVideo, ...savedVideos]);
-    setVideoUrl("");
-    setVideoTitle("");
+
+    try {
+      const token = getToken();
+      const res = await axios.post(
+        `${API_URL}/youtube`,
+        { videoId: id, title },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSavedVideos([res.data, ...savedVideos]);
+      setActiveVideoId(id);
+      setVideoUrl("");
+      setVideoTitle("");
+    } catch (err) {
+      console.error("Failed to save YouTube video link:", err);
+      alert("Failed to save video to database.");
+    }
   };
 
-  const handleDelete = (id: string, e: React.MouseEvent) => {
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setSavedVideos(savedVideos.filter((v) => v.id !== id));
+    try {
+      const token = getToken();
+      await axios.delete(`${API_URL}/youtube/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const updated = savedVideos.filter((v) => v._id !== id);
+      setSavedVideos(updated);
+      if (activeVideoId === savedVideos.find((v) => v._id === id)?.videoId) {
+        setActiveVideoId(updated.length > 0 ? updated[0].videoId : "");
+      }
+    } catch (err) {
+      console.error("Failed to delete YouTube video link:", err);
+      alert("Failed to delete video from database.");
+    }
   };
 
   return (
@@ -120,37 +152,43 @@ const YouTube = () => {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col max-h-[400px]">
             <h3 className="text-md font-bold mb-3 font-space-grotesk text-slate-600 dark:text-slate-300">Workspace Library</h3>
             <div className="space-y-2 overflow-y-auto flex-1 pr-1">
-              {savedVideos.map((video) => (
-                <div
-                  key={video.id}
-                  onClick={() => setActiveVideoId(video.videoId)}
-                  className={`flex items-start justify-between gap-3 p-3 rounded-xl cursor-pointer border transition-all ${
-                    activeVideoId === video.videoId
-                      ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900"
-                      : "bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-900 hover:bg-slate-100 dark:hover:bg-slate-900/50"
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className={`p-1.5 rounded-lg shrink-0 ${
-                      activeVideoId === video.videoId ? "bg-blue-500 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-500"
-                    }`}>
-                      <Play className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold truncate text-slate-800 dark:text-slate-200">{video.title}</p>
-                      <p className="text-[10px] text-slate-400 dark:text-slate-500">{video.addedAt}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={(e) => handleDelete(video.id, e)}
-                    className="p-1 text-slate-400 hover:text-red-500 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors shrink-0"
-                    title="Remove Video"
+              {loading ? (
+                <p className="text-xs text-slate-400 text-center py-6">Loading videos...</p>
+              ) : (
+                savedVideos.map((video) => (
+                  <div
+                    key={video._id}
+                    onClick={() => setActiveVideoId(video.videoId)}
+                    className={`flex items-start justify-between gap-3 p-3 rounded-xl cursor-pointer border transition-all ${
+                      activeVideoId === video.videoId
+                        ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900"
+                        : "bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-900 hover:bg-slate-100 dark:hover:bg-slate-900/50"
+                    }`}
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))}
-              {savedVideos.length === 0 && (
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className={`p-1.5 rounded-lg shrink-0 ${
+                        activeVideoId === video.videoId ? "bg-blue-500 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-500"
+                      }`}>
+                        <Play className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold truncate text-slate-800 dark:text-slate-200">{video.title}</p>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                          {new Date(video.addedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={(e) => handleDelete(video._id, e)}
+                      className="p-1 text-slate-400 hover:text-red-500 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors shrink-0"
+                      title="Remove Video"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))
+              )}
+              {!loading && savedVideos.length === 0 && (
                 <p className="text-xs text-slate-400 text-center py-6">No embedded videos saved yet.</p>
               )}
             </div>

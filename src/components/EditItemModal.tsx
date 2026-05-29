@@ -31,7 +31,34 @@ const EditItemModal = ({
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImage(reader.result as string);
+        const img = new Image();
+        img.src = reader.result as string;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const max_size = 400;
+          let width = img.width;
+          let height = img.height;
+          if (width > height) {
+            if (width > max_size) {
+              height *= max_size / width;
+              width = max_size;
+            }
+          } else {
+            if (height > max_size) {
+              width *= max_size / height;
+              height = max_size;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            setImage(canvas.toDataURL("image/jpeg", 0.7));
+          } else {
+            setImage(reader.result as string);
+          }
+        };
       };
       reader.readAsDataURL(file);
     }

@@ -1,12 +1,11 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Breadcrumbs from "../../components/Breadcrumbs";
-
-/**
- * Network Page - Displays a directory of connections with multiple view modes.
- * Features a Directory (Grid/List) and an Outreach (Campaigns) section.
- */
+import { contactService } from "../../api/contact.service";
+import type { Contact } from "../../api/contact.service";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../../config/firebase";
 
 const SearchIcon = () => (
   <svg
@@ -56,74 +55,18 @@ const LeftArrowIcon = () => (
   </svg>
 );
 
-interface Person {
-  name: string;
-  role: string;
-  avatar: string;
-  email?: string;
-  phone?: string;
-  bio?: string;
-}
 
-const people: Person[] = [
-  {
-    name: "Bessie Cooper",
-    role: "Web Designer",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Bessie",
-    email: "bessie.cooper@example.com",
-    phone: "+1 (555) 001-0203",
-    bio: "Passionate web designer with 10 years of experience in creating beautiful user interfaces.",
-  },
-  {
-    name: "Ronald Richards",
-    role: "Marketing Coordinator",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ronald",
-    email: "ronald.richards@example.com",
-    phone: "+1 (555) 123-4567",
-    bio: "Marketing strategist focused on data-driven growth and creative brand storytelling.",
-  },
-  {
-    name: "Brooklyn Simmons",
-    role: "Nursing Assistant",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Brooklyn",
-    email: "brooklyn.s@example.com",
-    phone: "+1 (555) 987-6543",
-    bio: "Dedicated healthcare professional providing compassionate care and assistance.",
-  },
-  {
-    name: "Leslie Alexander",
-    role: "President of Sales",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Leslie",
-    email: "leslie.alexander@example.com",
-    phone: "+1 (555) 246-8135",
-    bio: "Experienced sales leader driving revenue growth and building high-performance teams.",
-  },
-  {
-    name: "Guy Hawkins",
-    role: "Dog Trainer",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Guy",
-    email: "guy.hawkins@example.com",
-    phone: "+1 (555) 369-1478",
-    bio: "Expert dog trainer specialized in positive reinforcement and behavioral adjustment.",
-  },
-  {
-    name: "Darrell Steward",
-    role: "Medical Assistant",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Darrell",
-    email: "darrell.steward@example.com",
-    phone: "+1 (555) 741-8520",
-    bio: "Skilled medical assistant ensuring clinic efficiency and patient comfort.",
-  },
-];
 
 /**
  * NetworkTree Component - Visualizes connections in a radial tree/map layout.
  * @param onSelectPerson - callback when a person node is clicked
  */
 const NetworkTree = ({
+  people,
   onSelectPerson,
 }: {
-  onSelectPerson: (person: Person) => void;
+  people: Contact[];
+  onSelectPerson: (person: Contact) => void;
 }) => {
   return (
     <div className="w-full h-full flex items-center justify-center relative overflow-hidden">
@@ -167,10 +110,11 @@ const NetworkTree = ({
         const rad = (angle * Math.PI) / 180;
         const x = Math.cos(rad) * 180;
         const y = Math.sin(rad) * 180;
+        const avatarUrl = person.imageUrl || person.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(person.name)}`;
 
         return (
           <motion.div
-            key={i}
+            key={person._id || i}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1, x, y }}
             transition={{ delay: i * 0.1 }}
@@ -179,7 +123,7 @@ const NetworkTree = ({
           >
             <div className="w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden bg-white hover:scale-110 transition-transform">
               <img
-                src={person.avatar}
+                src={avatarUrl}
                 className="w-full h-full object-cover"
                 alt={person.name}
               />
@@ -205,9 +149,11 @@ const NetworkTree = ({
  * @param onSelectPerson - callback when a row is clicked
  */
 const ListView = ({
+  people,
   onSelectPerson,
 }: {
-  onSelectPerson: (person: Person) => void;
+  people: Contact[];
+  onSelectPerson: (person: Contact) => void;
 }) => {
   return (
     <div className="w-full h-full bg-white dark:bg-slate-900 rounded-4xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden flex flex-col transition-colors">
@@ -230,60 +176,63 @@ const ListView = ({
             </tr>
           </thead>
           <tbody>
-            {people.map((person, i) => (
-              <motion.tr
-                key={i}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.03 }}
-                className="group hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors cursor-pointer border-b border-gray-50 dark:border-slate-800 last:border-0"
-                onClick={() => onSelectPerson(person)}
-              >
-                <td className="px-8 py-4">
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={person.avatar}
-                      className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700"
-                      alt={person.name}
-                    />
-                    <span className="text-sm font-bold text-gray-900 dark:text-gray-100 font-['Space_Grotesk']">
-                      {person.name}
+            {people.map((person, i) => {
+              const avatarUrl = person.imageUrl || person.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(person.name)}`;
+              return (
+                <motion.tr
+                  key={person._id || i}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                  className="group hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors cursor-pointer border-b border-gray-50 dark:border-slate-800 last:border-0"
+                  onClick={() => onSelectPerson(person)}
+                >
+                  <td className="px-8 py-4">
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={avatarUrl}
+                        className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700"
+                        alt={person.name}
+                      />
+                      <span className="text-sm font-bold text-gray-900 dark:text-gray-100 font-['Space_Grotesk']">
+                        {person.name}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-8 py-4">
+                    <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-lg">
+                      {person.role}
                     </span>
-                  </div>
-                </td>
-                <td className="px-8 py-4">
-                  <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-lg">
-                    {person.role}
-                  </span>
-                </td>
-                <td className="px-8 py-4 hidden md:table-cell">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-medium text-gray-500">
-                      {person.email}
-                    </span>
-                    <span className="text-[10px] font-medium text-gray-400">
-                      {person.phone}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-8 py-4 text-right">
-                  <button className="text-gray-400 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </td>
-              </motion.tr>
-            ))}
+                  </td>
+                  <td className="px-8 py-4 hidden md:table-cell">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-medium text-gray-500">
+                        {person.email || "No email"}
+                      </span>
+                      <span className="text-[10px] font-medium text-gray-400">
+                        {person.phone || "No phone"}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-8 py-4 text-right">
+                    <button className="text-gray-400 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </td>
+                </motion.tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -299,12 +248,107 @@ const Network = () => {
   const [isPlusDropdownOpen, setIsPlusDropdownOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isViewDropdownOpen, setIsViewDropdownOpen] = useState(false);
-  const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
+
+  // Contacts states
+  const [people, setPeople] = useState<Contact[]>([]);
+  const [selectedPerson, setSelectedPerson] = useState<Contact | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Form states for adding connection
+  const [newContactName, setNewContactName] = useState("");
+  const [newContactRole, setNewContactRole] = useState("");
+  const [newContactEmail, setNewContactEmail] = useState("");
+  const [newContactPhone, setNewContactPhone] = useState("");
+  const [newContactImageUrl, setNewContactImageUrl] = useState("");
+  const [newContactBio, setNewContactBio] = useState("");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  const fetchContacts = async () => {
+    try {
+      setLoading(true);
+      const data = await contactService.getContacts();
+      setPeople(data);
+    } catch (error) {
+      console.error("Error loading contacts:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchContacts();
+  }, []);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingImage(true);
+      const fileRef = ref(storage, `contacts/${Date.now()}_${file.name}`);
+      const snapshot = await uploadBytes(fileRef, file);
+      const downloadUrl = await getDownloadURL(snapshot.ref);
+      setNewContactImageUrl(downloadUrl);
+    } catch (error) {
+      console.error("Error uploading image to Firebase Storage:", error);
+      alert("Failed to upload image. Please try again.");
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleSaveContact = async () => {
+    if (!newContactName.trim() || !newContactRole.trim()) {
+      alert("Name and Role are required");
+      return;
+    }
+
+    try {
+      const newContact = await contactService.createContact({
+        name: newContactName.trim(),
+        role: newContactRole.trim(),
+        email: newContactEmail.trim() || undefined,
+        phone: newContactPhone.trim() || undefined,
+        avatar: newContactImageUrl.trim() || undefined,
+        imageUrl: newContactImageUrl.trim() || undefined,
+        bio: newContactBio.trim() || undefined,
+      });
+
+      setPeople((prev) => [newContact, ...prev]);
+      setIsAddModalOpen(false);
+
+      // Reset form states
+      setNewContactName("");
+      setNewContactRole("");
+      setNewContactEmail("");
+      setNewContactPhone("");
+      setNewContactImageUrl("");
+      setNewContactBio("");
+    } catch (error) {
+      console.error("Error creating contact:", error);
+      alert("Failed to save contact. Please try again.");
+    }
+  };
+
+  const handleDeleteContact = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this contact?")) {
+      return;
+    }
+
+    try {
+      await contactService.deleteContact(id);
+      setPeople((prev) => prev.filter((p) => p._id !== id));
+      setSelectedPerson(null);
+    } catch (error) {
+      console.error("Error deleting contact:", error);
+      alert("Failed to delete contact.");
+    }
+  };
 
   /**
    * Modal component to display detailed information about a selected connection.
    */
-  const PersonDetailsModal = () => (
+  const renderPersonDetailsModal = () => (
     <AnimatePresence>
       {selectedPerson && (
         <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
@@ -346,7 +390,7 @@ const Network = () => {
             <div className="px-8 -mt-20 text-center relative z-10">
               <div className="inline-block p-1.5 bg-white dark:bg-slate-800 rounded-[2rem] shadow-2xl">
                 <img
-                  src={selectedPerson.avatar}
+                  src={selectedPerson.imageUrl || selectedPerson.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(selectedPerson.name)}`}
                   className="w-36 h-36 rounded-[1.7rem] bg-gray-50 dark:bg-slate-900 object-cover"
                   alt={selectedPerson.name}
                 />
@@ -402,26 +446,33 @@ const Network = () => {
                     Email
                   </span>
                 </button>
-                <button className="flex flex-col items-center gap-2 group">
-                  <div className="w-12 h-12 rounded-2xl bg-white border border-gray-100 text-gray-600 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-5.38c-3.72-3.8-10.64-5-15.4-2.22" />
-                    </svg>
-                  </div>
-                  <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
-                    Website
-                  </span>
-                </button>
+              
+                {selectedPerson._id && (
+                  <button
+                    onClick={() => handleDeleteContact(selectedPerson._id)}
+                    className="flex flex-col items-center gap-2 group"
+                  >
+                    <div className="w-12 h-12 rounded-2xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-lg shadow-red-500/35 group-hover:scale-110 transition-transform">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                        <line x1="10" y1="11" x2="10" y2="17" />
+                        <line x1="14" y1="11" x2="14" y2="17" />
+                      </svg>
+                    </div>
+                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+                      Delete
+                    </span>
+                  </button>
+                )}
               </div>
 
               {/* Bio/Info */}
@@ -431,8 +482,8 @@ const Network = () => {
                     <div className="w-1 h-1 rounded-full bg-blue-500"></div>
                     Professional Bio
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed font-medium">
-                    {selectedPerson.bio}
+                  <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed font-medium break-words whitespace-pre-wrap">
+                    {selectedPerson.bio || "No professional bio available."}
                   </p>
                 </div>
               </div>
@@ -446,7 +497,7 @@ const Network = () => {
   /**
    * Modal component to add a new connection (Contact).
    */
-  const AddConnectionModal = () => (
+  const renderAddConnectionModal = () => (
     <AnimatePresence>
       {isAddModalOpen && (
         <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
@@ -493,25 +544,87 @@ const Network = () => {
               <input
                 type="text"
                 placeholder="Name"
-                className="w-full p-3 border rounded-xl outline-none focus:border-blue-500 bg-gray-50/50"
+                value={newContactName}
+                onChange={(e) => setNewContactName(e.target.value)}
+                className="w-full p-3 border rounded-xl outline-none focus:border-blue-500 bg-gray-50/50 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
               />
               <input
                 type="text"
                 placeholder="Role"
-                className="w-full p-3 border rounded-xl outline-none focus:border-blue-500 bg-gray-50/50"
+                value={newContactRole}
+                onChange={(e) => setNewContactRole(e.target.value)}
+                className="w-full p-3 border rounded-xl outline-none focus:border-blue-500 bg-gray-50/50 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
               />
               <input
                 type="email"
                 placeholder="Email (Optional)"
-                className="w-full p-3 border rounded-xl outline-none focus:border-blue-500 bg-gray-50/50"
+                value={newContactEmail}
+                onChange={(e) => setNewContactEmail(e.target.value)}
+                className="w-full p-3 border rounded-xl outline-none focus:border-blue-500 bg-gray-50/50 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
               />
               <input
                 type="tel"
                 placeholder="Phone (Optional)"
-                className="w-full p-3 border rounded-xl outline-none focus:border-blue-500 bg-gray-50/50"
+                value={newContactPhone}
+                onChange={(e) => setNewContactPhone(e.target.value)}
+                className="w-full p-3 border rounded-xl outline-none focus:border-blue-500 bg-gray-50/50 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+              />
+              <div className="flex items-center gap-4 p-3 border border-dashed rounded-xl bg-gray-50/50 dark:bg-slate-800/50 dark:border-slate-700 border-gray-200 dark:border-slate-700">
+                <div className="relative w-12 h-12 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex items-center justify-center overflow-hidden shrink-0 group">
+                  {newContactImageUrl ? (
+                    <img
+                      src={newContactImageUrl}
+                      alt="Avatar Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      className="text-gray-400"
+                    >
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                      <circle cx="12" cy="13" r="4" />
+                    </svg>
+                  )}
+                  {isUploadingImage && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={isUploadingImage}
+                    onChange={handleImageUpload}
+                    className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-0.5">
+                    Contact Photo
+                  </span>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate">
+                    {isUploadingImage ? "Uploading to Firebase..." : newContactImageUrl ? "Upload successful" : "Click to upload image file"}
+                  </p>
+                </div>
+              </div>
+             
+              <textarea
+                placeholder="Bio (Optional)"
+                value={newContactBio}
+                onChange={(e) => setNewContactBio(e.target.value)}
+                className="w-full p-3 border rounded-xl outline-none focus:border-blue-500 bg-gray-50/50 dark:bg-slate-800 dark:border-slate-700 dark:text-white h-20 resize-none"
               />
               <button
-                onClick={() => setIsAddModalOpen(false)}
+                onClick={handleSaveContact}
                 className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold mt-4 hover:bg-blue-700 transition-colors"
               >
                 Save Contact
@@ -592,17 +705,9 @@ const Network = () => {
                       }}
                       className="w-full text-left px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-3"
                     >
-                      Outreach Campaign (Cold)
+                      Outreach Campaign
                     </button>
-                    <button
-                      onClick={() => {
-                        console.log("Outreach Campaign (Warm)");
-                        setIsPlusDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-3"
-                    >
-                      Outreach Campaign (Warm)
-                    </button>
+               
                   </motion.div>
                 </>
               )}
@@ -718,84 +823,61 @@ const Network = () => {
 
       <div className="flex-1 overflow-y-auto no-scrollbar pb-20 relative">
         {/* Contacts Section */}
-        <div className="mb-8">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 px-1 font-['Space_Grotesk']">
+        <div className="mb-8 flex items-center justify-between">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-0 px-1 font-['Space_Grotesk']">
             Contacts
           </h3>
+          {loading && (
+            <span className="text-xs text-gray-400 dark:text-gray-500 animate-pulse">
+              Loading...
+            </span>
+          )}
         </div>
         {/* Existing Views */}
         {viewMode === "people" ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-8">
-            {people.map((person, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="flex flex-col items-center group cursor-pointer"
-                onClick={() => setSelectedPerson(person)}
-              >
-                <div className="w-full aspect-square bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 p-8 mb-4 group-hover:shadow-md transition-shadow relative overflow-hidden">
-                  <div className="absolute inset-0 bg-linear-to-br from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <img
-                    src={person.avatar}
-                    className="w-full h-full object-cover rounded-2xl relative z-10"
-                    alt={person.name}
-                  />
-                </div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-0.5">
-                  {person.name}
-                </h3>
-                <p className="text-[10px] font-medium text-gray-400 dark:text-gray-500">
-                  {person.role}
-                </p>
-              </motion.div>
-            ))}
+            {people.map((person, i) => {
+              const avatarUrl = person.imageUrl || person.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(person.name)}`;
+              return (
+                <motion.div
+                  key={person._id || i}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="flex flex-col items-center group cursor-pointer"
+                  onClick={() => setSelectedPerson(person)}
+                >
+                  <div className="w-full aspect-square bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 p-0 mb-0 group-hover:shadow-md transition-shadow relative overflow-hidden">
+                    <div className="absolute inset-0 bg-linear-to-br from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <img
+                      src={avatarUrl}
+                      className="w-full h-full object-cover rounded-2xl relative z-10"
+                      alt={person.name}
+                    />
+                  </div>
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-0.5">
+                    {person.name}
+                  </h3>
+                  <p className="text-[10px] font-medium text-gray-400 dark:text-gray-500">
+                    {person.role}
+                  </p>
+                </motion.div>
+              );
+            })}
           </div>
         ) : viewMode === "tree" ? (
           <div className="w-full h-[500px] rounded-4xl relative overflow-hidden bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 mb-8">
-            <NetworkTree onSelectPerson={setSelectedPerson} />
+            <NetworkTree people={people} onSelectPerson={setSelectedPerson} />
           </div>
         ) : (
-          <ListView onSelectPerson={setSelectedPerson} />
+          <ListView people={people} onSelectPerson={setSelectedPerson} />
         )}
 
         <div className="h-px bg-gray-200 dark:bg-slate-800 w-full my-8"></div>
-
-        {/* Outreach Campaigns Section */}
-        <div className="mb-8">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 px-1 font-['Space_Grotesk']">
-            Outreach Campaigns
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Example Campaign Card */}
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex justify-between items-start mb-4">
-                <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-md">
-                  Active
-                </span>
-                <div className="flex -space-x-2">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-800 border-2 border-white dark:border-slate-900"
-                    ></div>
-                  ))}
-                </div>
-              </div>
-              <h4 className="font-bold text-gray-900 dark:text-gray-100 mb-1">
-                Q1 Investor Outreach
-              </h4>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Targeting 50 potential angels.
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
 
-      <AddConnectionModal />
-      <PersonDetailsModal />
+      {renderAddConnectionModal()}
+      {renderPersonDetailsModal()}
     </div>
   );
 };
