@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useOutletContext } from "react-router-dom";
 import Login from "./auth/Login";
 import Register from "./auth/Register";
 import Onboard from "./auth/Onboard";
@@ -20,11 +20,11 @@ import Network from "./pages/bizinfra/Network";
 import Capital from "./pages/bizinfra/Capital";
 import Intel from "./pages/bizinfra/Intel";
 import Reach from "./pages/bizinfra/Reach";
-import SkillsetDetail from "./pages/bizinfra/SkillsetDetail";
 import Phase from "./pages/bizinfra/Phase";
 import Project from "./pages/bizinfra/Project";
-import Process from "./pages/bizinfra/Process";
-import Block from "./pages/bizinfra/Block";
+import Projects from "./pages/bizinfra/Projects";
+import Process from "./pages/bizinfra/Tasks";
+import Block from "./pages/bizinfra/Document";
 
 import SaasDepartment from "./pages/portfolio/Department";
 import SaasOperation from "./pages/portfolio/Operation";
@@ -50,21 +50,26 @@ import ShowBusinessDoc from "./pages/portfolio/ShowBusinessDoc";
 import Block2 from "./pages/portfolio/Block";
 import BusinessDocs from "./pages/portfolio/BusinessDocs";
 
-import IntegrationsIndex from "./pages/settings/Index";
-import IntegrationsYouTube from "./pages/settings/YouTube";
-import IntegrationsDocuments from "./pages/settings/Documents";
-import IntegrationsSpreadsheet from "./pages/settings/Spreadsheet";
-import IntegrationsWhiteboard from "./pages/settings/Whiteboard";
-import IntegrationsFiles from "./pages/settings/Files";
-import IntegrationsSlides from "./pages/settings/Slides";
+import IntegrationsIndex from "./pages/integrations/Index";
+import IntegrationsYouTube from "./pages/integrations/YouTube";
+import IntegrationsDocuments from "./pages/integrations/Documents";
+import IntegrationsSpreadsheet from "./pages/integrations/Spreadsheet";
+import IntegrationsWhiteboard from "./pages/integrations/Whiteboard";
+import IntegrationsFiles from "./pages/integrations/Files";
+import IntegrationsSlides from "./pages/integrations/Slides";
 import AgentWorkspace from "./pages/agent/AgentWorkspace";
 import Privacy from "./auth/Privacy";
 import Terms from "./auth/Terms";
 
+const IntegrationsLayout = () => {
+  const context = useOutletContext();
+  return <Outlet context={context} />;
+};
+
 const App = () => {
   return (
     <BrowserRouter>
-      
+
       <Routes>
         {/* Public Routes */}
         <Route path="/register" element={<Register />} />
@@ -91,7 +96,9 @@ const App = () => {
           <Route path="bizinfra" element={<Main />}>
             <Route index element={<Firstpage />} />
             <Route path="skillset" element={<Skilset />} />
-            <Route path="skillset/:id" element={<SkillsetDetail />} />
+            <Route path="skillset/:id/projects" element={<Projects />} />
+            <Route path="skillset/:id/projects/:projectId" element={<Project />} />
+            <Route path="skillset/:id/projects/:projectId/:phaseId" element={<Phase />} />
             <Route path="skillset/:id/project" element={<Project />} />
             <Route path="skillset/:id/project/:phaseId" element={<Phase />} />
             <Route path="skillset/:id/process" element={<Process />} />
@@ -101,7 +108,7 @@ const App = () => {
             <Route path="intel" element={<Intel />} />
             <Route path="reach" element={<Reach />} />
           </Route>
-            {/* Portfolio Routes */}
+          {/* Portfolio Routes */}
           <Route path="portfolio" element={<PortfolioMain />}>
             <Route index element={<PortfolioFirstpage />} />
             <Route path="saas" element={<Saas />} />
@@ -126,11 +133,11 @@ const App = () => {
             <Route path="saas/showbusinesstask/:taskId" element={<ShowBusinessTask />} />
             <Route path="saas/showbusinessdoc/:docId" element={<ShowBusinessDoc />} />
             <Route path="saas/businessdocs/:businessId" element={<BusinessDocs />} />
-            
-            
+
+
           </Route>
           {/* Integrations Routes */}
-          <Route path="settings" element={<Outlet />}>
+          <Route path="integrations" element={<IntegrationsLayout />}>
             <Route index element={<IntegrationsIndex />} />
             <Route path="youtube" element={<IntegrationsYouTube />} />
             <Route path="documents" element={<IntegrationsDocuments />} />

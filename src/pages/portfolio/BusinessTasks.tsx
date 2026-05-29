@@ -384,6 +384,7 @@ const Process = () => {
   const [newTask, setNewTask] = useState({ name: "", agentIds: [] as string[] });
   const [docFile, setDocFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [selectedDocUrl, setSelectedDocUrl] = useState<string | null>(null);
 
   const [people] = useState<Array<{ name: string; seed: string }>>([
     { name: "Felix", seed: "Felix" },
@@ -753,14 +754,12 @@ const Process = () => {
                           <p className="text-xs text-gray-500 dark:text-gray-400">Document</p>
                         </div>
                       </div>
-                      <a 
-                        href={doc.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                      <button 
+                        onClick={() => setSelectedDocUrl(doc.url)}
+                        className="px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors cursor-pointer"
                       >
                         View File
-                      </a>
+                      </button>
                     </motion.div>
                   ))
                 )}
@@ -875,6 +874,43 @@ const Process = () => {
         onSelect={handleModeSelect}
         categoryLabel={selectedType?.label || "Tasks"}
       />
+
+      {/* Document Viewer Modal */}
+      <AnimatePresence>
+        {selectedDocUrl && (
+          <div className="fixed inset-0 z-[200] flex flex-col">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedDocUrl(null)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative z-[201] flex flex-col h-full w-full p-4 md:p-8 max-w-7xl mx-auto"
+            >
+              <div className="flex items-center justify-end mb-4">
+                <button
+                  onClick={() => setSelectedDocUrl(null)}
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="flex-1 w-full bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center">
+                <iframe
+                  src={selectedDocUrl}
+                  className="w-full h-full border-none"
+                  title="Document Viewer"
+                />
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

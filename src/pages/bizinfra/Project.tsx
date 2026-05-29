@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Breadcrumbs from "../../components/Breadcrumbs";
-
 import EditItemModal from "../../components/EditItemModal";
+import apiClient from "../../api/apiClient";
 
 /**
  * Project Page (BizInfra) - Displays the phases of a selected project.
@@ -43,21 +43,6 @@ const TrashIcon = () => (
   </svg>
 );
 
-const SearchIcon = () => (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="11" cy="11" r="8"></circle>
-    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-  </svg>
-);
 
 const PlusIcon = () => (
   <svg
@@ -91,11 +76,6 @@ const LeftArrow = () => (
   </svg>
 );
 
-const addOptions = [
-  { id: "process", label: "Tasks" },
-  { id: "project", label: "Project" },
-  { id: "block", label: "Documents" },
-];
 
 const LongArrow = () => (
   <div className="mx-6 sm:mx-8 flex items-center">
@@ -124,13 +104,11 @@ type PhaseCard = { id: string; label: string; to: string };
 function PhaseItem({
   card,
   isLast,
-  onGo,
   onRename,
   onDelete,
 }: {
   card: PhaseCard;
   isLast: boolean;
-  onGo: (to: string) => void;
   onRename: (card: PhaseCard) => void;
   onDelete: (card: PhaseCard) => void;
 }) {
@@ -138,13 +116,12 @@ function PhaseItem({
     <div className="flex items-center">
       <div className="relative group">
         {/* Phase label */}
-        <button
-          type="button"
-          onClick={() => onGo(card.to)}
+        <Link
+          to={card.to}
           className="text-3xl sm:text-4xl font-semibold text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300 transition-colors font-['Space_Grotesk']"
         >
           {card.label}
-        </button>
+        </Link>
 
         {/* Hover Actions (Edit/Delete) - Positioned above */}
         <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-white/90 dark:bg-slate-800/90 rounded-lg p-1 shadow-sm border border-gray-100 dark:border-slate-700">
@@ -174,29 +151,100 @@ function PhaseItem({
     </div>
   );
 }
+/* ─── Add Phase Modal ─── */
+
+const AddPhaseModal = ({
+  isOpen,
+  onClose,
+  onSave,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (name: string) => Promise<void> | void;
+}) => {
+  const [name, setName] = useState("");
+
+  useEffect(() => {
+    if (isOpen) {
+      setName("");
+    }
+  }, [isOpen]);
+
+  const handleSave = () => {
+    if (name.trim()) {
+      onSave(name.trim());
+      onClose();
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl relative z-100 p-8 font-['Inter'] border border-gray-100 dark:border-slate-800"
+          >
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 font-['Space_Grotesk']">
+              Add New Phase
+            </h3>
+
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Phase Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900/20 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  placeholder="e.g. Setup and Configuration"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={onClose}
+                  className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-400 font-medium hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={!name.trim()}
+                  className="flex-1 px-4 py-3 rounded-xl bg-blue-600 dark:bg-blue-500 text-white font-medium hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-lg shadow-blue-600/10 dark:shadow-blue-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Add Phase
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
 
 const Project = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id: skillId, projectId } = useParams<{ id: string; projectId: string }>();
 
-  const [cards, setCards] = useState([
-    {
-      id: "phase1",
-      label: "Phase 1",
-      to: `/dashboard/bizinfra/skillset/${id}/project/phase1`,
-    },
-    {
-      id: "phase2",
-      label: "Phase 2",
-      to: `/dashboard/bizinfra/skillset/${id}/project/phase2`,
-    },
-    {
-      id: "phase3",
-      label: "Phase 3",
-      to: `/dashboard/bizinfra/skillset/${id}/project/phase3`,
-    },
-  ]);
+  const [cards, setCards] = useState<PhaseCard[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [skillName, setSkillName] = useState("Skill");
+  const [projectName, setProjectName] = useState("Project");
 
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<{
     id: string;
@@ -204,47 +252,110 @@ const Project = () => {
     image?: string | null;
   } | null>(null);
 
-  const handleSaveEdit = (id: string, newName: string) => {
-    setCards((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, label: newName } : c)),
-    );
-  };
+  // Fetch the skill name for breadcrumbs
+  useEffect(() => {
+    const fetchSkillName = async () => {
+      try {
+        const response = await apiClient.get(`/skills`);
+        if (response.data) {
+          const skill = response.data.find((s: any) => s._id === skillId);
+          if (skill) {
+            setSkillName(skill.skillname);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching skill name:", error);
+      }
+    };
+    if (skillId) fetchSkillName();
+  }, [skillId]);
 
-  const handleDelete = (id: string) => {
-    if (window.confirm("Are you sure you want to delete this phase?")) {
-      const newCards = cards.filter((c) => c.id !== id);
-      setCards(newCards);
+  // Fetch project name and phases on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        // Fetch project details
+        const projectRes = await apiClient.get(`/skills/projects/${projectId}`);
+        if (projectRes.data) {
+          setProjectName(projectRes.data.projectname);
+        }
+
+        // Fetch phases
+        const phasesRes = await apiClient.get("/skills/phases", {
+          params: { projectid: projectId }
+        });
+        if (phasesRes.data) {
+          const loadedPhases = phasesRes.data.map((p: any) => ({
+            id: p._id,
+            label: p.phasename,
+            to: `/dashboard/bizinfra/skillset/${skillId}/projects/${projectId}/${p._id}`,
+          }));
+          setCards(loadedPhases);
+        }
+      } catch (error) {
+        console.error("Error fetching project data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    if (projectId) {
+      fetchData();
+    }
+  }, [projectId, skillId]);
+
+  const handleAddPhase = async (name: string) => {
+    try {
+      const response = await apiClient.post("/skills/phases", {
+        projectid: projectId,
+        phasename: name,
+      });
+      if (response.data) {
+        const saved = response.data;
+        setCards((prev) => [
+          ...prev,
+          {
+            id: saved._id,
+            label: saved.phasename,
+            to: `/dashboard/bizinfra/skillset/${skillId}/projects/${projectId}/${saved._id}`,
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error("Error creating phase:", error);
     }
   };
 
-  const [isPlusOpen, setIsPlusOpen] = useState(false);
-  const plusButtonRef = useRef<HTMLButtonElement | null>(null);
-  const plusMenuRef = useRef<HTMLDivElement | null>(null);
-  const skillName = id
-    ? id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, " ")
-    : "Skillset";
-  const skillPath = id
-    ? `/dashboard/bizinfra/skillset/${id}`
-    : "/dashboard/bizinfra/skillset";
-  const projectPath = id
-    ? `/dashboard/bizinfra/skillset/${id}/project`
-    : "/dashboard/bizinfra/skillset";
-
-  useEffect(() => {
-    if (!isPlusOpen) return;
-    const handleClick = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (
-        plusMenuRef.current?.contains(target) ||
-        plusButtonRef.current?.contains(target)
-      ) {
-        return;
+  const handleSaveEdit = async (id: string, newName: string) => {
+    try {
+      const response = await apiClient.put(`/skills/phases/${id}`, {
+        phasename: newName,
+      });
+      if (response.data) {
+        const updated = response.data;
+        setCards((prev) =>
+          prev.map((c) => (c.id === id ? { ...c, label: updated.phasename } : c)),
+        );
       }
-      setIsPlusOpen(false);
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [isPlusOpen]);
+    } catch (error) {
+      console.error("Error updating phase:", error);
+    }
+  };
+
+  const handleDelete = async (phase: PhaseCard) => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this phase and all its associated tasks and documents?"
+      )
+    ) {
+      try {
+        await apiClient.delete(`/skills/phases/${phase.id}`);
+        setCards((prev) => prev.filter((c) => c.id !== phase.id));
+      } catch (error) {
+        console.error("Error deleting phase:", error);
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-100px)] bg-[#f0f0eb] dark:bg-slate-950 px-4 sm:px-8 relative overflow-hidden transition-colors duration-300">
@@ -262,8 +373,11 @@ const Project = () => {
             items={[
               { label: "BizInfra", to: "/dashboard/bizinfra" },
               { label: "Skillset", to: "/dashboard/bizinfra/skillset" },
-              { label: skillName, to: skillPath },
-              { label: "Project", to: projectPath },
+              {
+                label: skillName,
+                to: `/dashboard/bizinfra/skillset/${skillId}/projects`,
+              },
+              { label: projectName, to: `/dashboard/bizinfra/skillset/${skillId}/projects/${projectId}` },
             ]}
           />
         </div>
@@ -272,71 +386,70 @@ const Project = () => {
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-slate-900 transition-colors"
-          >
-            <SearchIcon />
-          </motion.button>
-          <motion.button
-            ref={plusButtonRef}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setIsPlusOpen((open) => !open)}
+            onClick={() => setIsAddModalOpen(true)}
             className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-slate-900 transition-colors"
           >
             <PlusIcon />
           </motion.button>
-
-          {isPlusOpen && (
-            <div
-              ref={plusMenuRef}
-              className="absolute right-0 top-12 w-44 rounded-xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg overflow-hidden z-50"
-            >
-              {addOptions.map((option) => (
-                <Link
-                  key={option.id}
-                  to={`/dashboard/bizinfra/skillset/${id}/${option.id}`}
-                  onClick={() => setIsPlusOpen(false)}
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-black dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-                >
-                  <PlusIcon />
-                  {option.label}
-                </Link>
-              ))}
-            </div>
-          )}
         </div>
       </header>
 
       {/* Phases Flow */}
       <div className="flex-1 flex items-center justify-center w-full">
-        <div className="flex items-center justify-center flex-wrap">
-          {cards.map((card, i) => (
-            <PhaseItem
-              key={card.id}
-              card={card}
-              isLast={i === cards.length - 1}
-              onGo={(to) => navigate(to)}
-              onRename={(c) => {
-                setEditingItem(c);
-                setIsEditModalOpen(true);
-              }}
-              onDelete={(c) => {
-                handleDelete(c.id);
-              }}
-            />
-          ))}
+        {isLoading ? (
+          <div className="flex items-center justify-center gap-6">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+            <span className="text-gray-500 dark:text-gray-400 font-['Space_Grotesk']">Loading phases...</span>
+          </div>
+        ) : cards.length === 0 ? (
+          <div className="text-center py-20 flex flex-col items-center gap-4">
+            <p className="text-gray-400 dark:text-gray-500 font-['Space_Grotesk'] text-lg">
+              No phases found. Click the plus button above or below to add your first phase!
+            </p>
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="px-6 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/10 flex items-center gap-2"
+            >
+              <PlusIcon />
+              <span>Create Phase</span>
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center flex-wrap">
+            {cards.map((card, i) => (
+              <PhaseItem
+                key={card.id}
+                card={card}
+                isLast={i === cards.length - 1}
+                onRename={(c) => {
+                  setEditingItem(c);
+                  setIsEditModalOpen(true);
+                }}
+                onDelete={(c) => {
+                  handleDelete(c);
+                }}
+              />
+            ))}
 
-          {/* Plus button after Phase 3 */}
-          <button
-            type="button"
-            onClick={() => setIsPlusOpen(true)}
-            className="ml-12 w-10 h-10 rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-sm flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition"
-            aria-label="Add Phase"
-          >
-            <PlusIcon />
-          </button>
-        </div>
+            {/* Plus button after Phase flow */}
+            <button
+              type="button"
+              onClick={() => setIsAddModalOpen(true)}
+              className="ml-12 w-10 h-10 rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-sm flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition"
+              aria-label="Add Phase"
+            >
+              <PlusIcon />
+            </button>
+          </div>
+        )}
       </div>
+
+      <AddPhaseModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSave={handleAddPhase}
+      />
+
       <EditItemModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -348,4 +461,4 @@ const Project = () => {
   );
 };
 
-export default Project;
+export default Project; 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import { BubbleMenu, FloatingMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
@@ -20,28 +20,8 @@ import {
   Undo,
   Redo,
 } from "lucide-react";
-
-interface SavedDoc {
-  id: string;
-  title: string;
-  content: string;
-  updatedAt: string;
-}
-
-const DEFAULT_DOCS: SavedDoc[] = [
-  {
-    id: "doc-1",
-    title: "Project Scope & Objectives",
-    content: "<h1>Project Scope</h1><p>This document details the goals and requirements for our upcoming SaaS infrastructure release.</p><h2>Objectives</h2><ul><li>Implement secure login APIs</li><li>Integrate Tiptap rich text editor</li><li>Set up responsive dashboards</li></ul>",
-    updatedAt: "5/24/2026",
-  },
-  {
-    id: "doc-2",
-    title: "Meeting Notes - Scaling Strategy",
-    content: "<h1>Meeting Notes</h1><p>Date: May 24, 2026</p><p>Attendees: Product, Engineering, Capital partners.</p><blockquote>Goal: Expand user base by 50% in Q3.</blockquote>",
-    updatedAt: "5/24/2026",
-  }
-];
+import { documentService } from "../../api/document.service";
+import type { DocumentItem } from "../../api/document.service";
 
 const MenuBar = ({ editor }: { editor: any }) => {
   if (!editor) {
@@ -218,18 +198,55 @@ const MenuBar = ({ editor }: { editor: any }) => {
 };
 
 const Documents = () => {
-  const [docs, setDocs] = useState<SavedDoc[]>(() => {
-    const saved = localStorage.getItem("workspace_docs");
-    return saved ? JSON.parse(saved) : DEFAULT_DOCS;
-  });
-  const [activeDocId, setActiveDocId] = useState<string>("doc-1");
+  const [docs, setDocs] = useState<DocumentItem[]>([]);
+  const [activeDocId, setActiveDocId] = useState<string>("");
   const [newTitle, setNewTitle] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const activeDoc = docs.find((d) => d.id === activeDocId) || docs[0];
+  const activeDoc = docs.find((d) => d._id === activeDocId) || docs[0];
+
+  const fetchDocs = async () => {
+    try {
+      setLoading(true);
+      const data = await documentService.getDocuments();
+      setDocs(data);
+      if (data.length > 0) {
+        setActiveDocId(data[0]._id);
+      }
+    } catch (error) {
+      console.error("Error loading documents:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    localStorage.setItem("workspace_docs", JSON.stringify(docs));
-  }, [docs]);
+    fetchDocs();
+  }, []);
+
+  const saveTimeoutRef = useRef<any>(null);
+
+  const handleEditorUpdate = (html: string) => {
+    if (!activeDocId) return;
+
+    setDocs((prevDocs) =>
+      prevDocs.map((doc) =>
+        doc._id === activeDocId ? { ...doc, content: html } : doc
+      )
+    );
+
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        await documentService.updateDocument(activeDocId, { content: html });
+      } catch (error) {
+        console.error("Error autosaving document content:", error);
+      }
+    }, 1500);
+  };
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -241,57 +258,85 @@ const Documents = () => {
     },
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
-      if (activeDocId) {
-        setDocs((prevDocs) =>
-          prevDocs.map((doc) =>
-            doc.id === activeDocId
-              ? { ...doc, content: html, updatedAt: new Date().toLocaleDateString() }
-              : doc
-          )
-        );
-      }
+      handleEditorUpdate(html);
     },
   });
 
-  // Keep editor content in sync when activeDocId changes
   useEffect(() => {
     if (editor && activeDoc && editor.getHTML() !== activeDoc.content) {
       editor.commands.setContent(activeDoc.content);
     }
   }, [activeDocId, editor]);
 
-  const handleCreateDoc = (e: React.FormEvent) => {
+  const handleCreateDoc = async (e: React.FormEvent) => {
     e.preventDefault();
     const title = newTitle.trim() || `Untitled Document`;
-    const newDoc: SavedDoc = {
-      id: Date.now().toString(),
-      title,
-      content: "<h1>New Document</h1><p>Start writing here...</p>",
-      updatedAt: new Date().toLocaleDateString(),
-    };
-    setDocs([newDoc, ...docs]);
-    setActiveDocId(newDoc.id);
-    setNewTitle("");
-  };
-
-  const handleDeleteDoc = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const filtered = docs.filter((d) => d.id !== id);
-    setDocs(filtered);
-    if (activeDocId === id && filtered.length > 0) {
-      setActiveDocId(filtered[0].id);
+    try {
+      const item = await documentService.createDocument({
+        title,
+        content: "<h1>New Document</h1><p>Start writing here...</p>"
+      });
+      setDocs((prev) => [item, ...prev]);
+      setActiveDocId(item._id);
+      setNewTitle("");
+    } catch (error) {
+      console.error("Error creating document:", error);
+      alert("Failed to create document.");
     }
   };
 
-  const handleRenameActiveDoc = (title: string) => {
+  const handleDeleteDoc = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Are you sure you want to delete this document?")) {
+      return;
+    }
+    try {
+      await documentService.deleteDocument(id);
+      const filtered = docs.filter((d) => d._id !== id);
+      setDocs(filtered);
+      if (activeDocId === id && filtered.length > 0) {
+        setActiveDocId(filtered[0]._id);
+      } else if (filtered.length === 0) {
+        setActiveDocId("");
+      }
+    } catch (error) {
+      console.error("Error deleting document:", error);
+      alert("Failed to delete document.");
+    }
+  };
+
+  const handleRenameActiveDoc = async (title: string) => {
+    if (!activeDocId) return;
     setDocs((prevDocs) =>
       prevDocs.map((doc) =>
-        doc.id === activeDocId
-          ? { ...doc, title }
-          : doc
+        doc._id === activeDocId ? { ...doc, title } : doc
       )
     );
+    try {
+      await documentService.updateDocument(activeDocId, { title });
+    } catch (error) {
+      console.error("Error renaming document:", error);
+    }
   };
+
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 transition-colors duration-300">
+        <div className="text-center space-y-4">
+          <FileText className="w-12 h-12 animate-pulse mx-auto text-blue-500" />
+          <p className="text-sm font-semibold font-['Inter']">Loading documents...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6 text-slate-800 dark:text-slate-100 min-h-screen">
@@ -342,27 +387,29 @@ const Documents = () => {
             <div className="space-y-2 overflow-y-auto flex-1 pr-1">
               {docs.map((doc) => (
                 <div
-                  key={doc.id}
-                  onClick={() => setActiveDocId(doc.id)}
+                  key={doc._id}
+                  onClick={() => setActiveDocId(doc._id)}
                   className={`flex items-start justify-between gap-3 p-3 rounded-xl cursor-pointer border transition-all ${
-                    activeDocId === doc.id
+                    activeDocId === doc._id
                       ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900"
                       : "bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-900 hover:bg-slate-100 dark:hover:bg-slate-900/50"
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className={`p-1.5 rounded-lg shrink-0 ${
-                      activeDocId === doc.id ? "bg-blue-500 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-500"
+                      activeDocId === doc._id ? "bg-blue-500 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-500"
                     }`}>
                       <FileText className="w-3.5 h-3.5" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-semibold truncate text-slate-800 dark:text-slate-200">{doc.title}</p>
-                      <p className="text-[10px] text-slate-400 dark:text-slate-500">{doc.updatedAt}</p>
+                      <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                        {doc.updatedAt ? new Date(doc.updatedAt).toLocaleDateString() : ""}
+                      </p>
                     </div>
                   </div>
                   <button
-                    onClick={(e) => handleDeleteDoc(doc.id, e)}
+                    onClick={(e) => handleDeleteDoc(doc._id, e)}
                     className="p-1 text-slate-400 hover:text-red-500 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors shrink-0"
                     title="Remove Document"
                   >
@@ -389,7 +436,7 @@ const Documents = () => {
                   className="text-lg font-bold font-space-grotesk bg-transparent border-none outline-none text-slate-800 dark:text-slate-100 flex-1 focus:ring-2 focus:ring-blue-500/25 rounded-md px-1"
                 />
                 <span className="text-xs text-slate-400 font-medium whitespace-nowrap">
-                  Saved: {activeDoc.updatedAt}
+                  Saved: {activeDoc.updatedAt ? new Date(activeDoc.updatedAt).toLocaleDateString() : ""}
                 </span>
               </div>
 
