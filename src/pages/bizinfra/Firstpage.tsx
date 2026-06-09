@@ -171,18 +171,18 @@ const Firstpage = () => {
       image: "/bizinfra/capital.png",
       link: "capital",
     },
-    {
-      id: "Intel",
-      label: "Intel",
-      image: "/bizinfra/intel2.png",
-      link: "intel",
-    },
-    {
-      id: "Reach",
-      label: "Reach",
-      image: "/bizinfra/reach.png",
-      link: "reach",
-    },
+    // {
+    //   id: "Intel",
+    //   label: "Intel",
+    //   image: "/bizinfra/intel2.png",
+    //   link: "intel",
+    // },
+    // {
+    //   id: "Reach",
+    //   label: "Reach",
+    //   image: "/bizinfra/reach.png",
+    //   link: "reach",
+    // },
   ]);
 
   const onDragEnd = (result: DropResult) => {
